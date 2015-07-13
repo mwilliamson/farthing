@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+import farthing
+import sys
+
+
+farthing.run(sys.argv[1])
