@@ -39,5 +39,33 @@ class Loader(FileLoader):
             return decode_source(source_file.read())
     
     def source_to_code(self, data, path):
-        node = ast.parse(data, path)
+        node = FunctionArgumentTracer().visit(ast.parse(data, path))
         return compile(node, path, 'exec')
+
+
+class FunctionArgumentTracer(ast.NodeTransformer):
+    def visit_FunctionDef(self, node):
+        node = self.generic_visit(node)
+        nodes = NodeFactory(node)
+        
+        node.body.insert(0, nodes.Expr(
+            nodes.Call(
+                func=nodes.Name("print", ast.Load()),
+                args=[nodes.Str(node.name)],
+                keywords=[],
+                starargs=None,
+                kwargs=None,
+            )
+        ))
+        return node
+
+
+class NodeFactory(object):
+    def __init__(self, source_node):
+        self._source_node = source_node
+    
+    def __getattr__(self, name):
+        def create_node(*args, **kwargs):
+            return ast.copy_location(getattr(ast, name)(*args, **kwargs), self._source_node)
+        
+        return create_node
