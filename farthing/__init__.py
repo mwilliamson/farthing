@@ -3,7 +3,7 @@ import sys
 import os
 import ast
 from importlib.abc import MetaPathFinder, FileLoader
-from importlib.machinery import ModuleSpec
+from importlib.machinery import ModuleSpec, PathFinder
 from importlib.util import decode_source
 
 
@@ -24,14 +24,13 @@ class Finder(MetaPathFinder):
         self._directory_path = directory_path
     
     def find_spec(self, fullname, path, target=None):
-        path_prefix = os.path.join(self._directory_path, *fullname.split("."))
-        package_path = os.path.join(path_prefix, "__init__.py")
-        module_path = path_prefix + ".py"
-        
-        for possible_path in [package_path, module_path]:
-            if os.path.exists(possible_path):
-                return ModuleSpec(fullname, Loader(fullname, possible_path))
-
+        module_spec = PathFinder.find_spec(fullname, path, target)
+        if module_spec and module_spec.has_location and self._is_in_directory(module_spec.origin):
+            return ModuleSpec(fullname, Loader(fullname, module_spec.origin))
+    
+    def _is_in_directory(self, path):
+        return os.path.commonprefix(list(map(os.path.normpath, [self._directory_path, path])))
+    
 
 class Loader(FileLoader):
     def get_source(self, fullname):
