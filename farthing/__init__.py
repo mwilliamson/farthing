@@ -10,11 +10,13 @@ from importlib.util import decode_source
 __all__ = ["run"]
 
 
-def run(path):
-    directory_path = os.path.dirname(path)
-    sys.path[0] = directory_path
-    sys.meta_path.insert(0, Finder(directory_path))
-    runpy.run_path(path)
+def run(argv):
+    script = argv[2]
+    script_directory_path = os.path.dirname(script)
+    sys.path[0] = script_directory_path
+    sys.meta_path.insert(0, Finder(argv[1]))
+    sys.argv[:] = [argv[0]] + argv[3:]
+    runpy.run_path(script, run_name="__main__")
 
 
 class Finder(MetaPathFinder):
