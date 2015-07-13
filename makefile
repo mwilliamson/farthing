@@ -1,6 +1,7 @@
 .PHONY: test upload clean bootstrap
 
 test:
+	_virtualenv/bin/pyflakes farthing tests
 	sh -c '. _virtualenv/bin/activate; nosetests tests'
 	
 upload:

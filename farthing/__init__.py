@@ -1,5 +1,4 @@
 import runpy
-import sys
 
 __all__ = ["run"]
 
