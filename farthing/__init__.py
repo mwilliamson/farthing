@@ -33,8 +33,7 @@ def _trace_subprocess(trace_path, argv, pipe):
         sys.path[0] = script_directory_path
         transformer = FunctionTraceTransformer(_trace_func_name)
         finder = importing.Finder(trace_path, transformer)
-        sys.meta_path.insert(0, finder)
-        try:
+        with _prioritise_module_finder(finder):
             trace = []
             
             def trace_func(func_index):
@@ -54,8 +53,6 @@ def _trace_subprocess(trace_path, argv, pipe):
             finally:
                 delattr(builtins, _trace_func_name)
             pipe.send(trace)
-        finally:
-            sys.meta_path.remove(finder)
 
 
 def _read_arg_type(frame, arg_node):
@@ -72,6 +69,15 @@ def _override_sys_argv(argv):
         yield
     finally:
         sys.argv[:] = original_argv
+
+
+@contextlib.contextmanager
+def _prioritise_module_finder(finder):
+    sys.meta_path.insert(0, finder)
+    try:
+        yield
+    finally:
+        sys.meta_path.remove(finder)
 
 
 class TraceEntry(object):
