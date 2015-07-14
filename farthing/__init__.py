@@ -1,13 +1,13 @@
 import runpy
 import sys
 import os
-import ast
 import uuid
 import builtins
 import multiprocessing
 import inspect
 
 from . import importing
+from .transformer import FunctionTraceTransformer
 
 
 __all__ = ["run"]
@@ -29,7 +29,7 @@ def _trace_subprocess(trace_path, argv, pipe):
     try:
         script_directory_path = os.path.dirname(argv[0])
         sys.path[0] = script_directory_path
-        transformer = FunctionArgumentTracer()
+        transformer = FunctionTraceTransformer(_trace_func_name)
         finder = importing.Finder(trace_path, transformer)
         sys.meta_path.insert(0, finder)
         try:
@@ -71,35 +71,3 @@ class TraceEntry(object):
 
 _trace_func_name = str(uuid.uuid4())
 
-class FunctionArgumentTracer(ast.NodeTransformer):
-    def __init__(self):
-        self.funcs = []
-    
-    def visit_FunctionDef(self, node):
-        node = self.generic_visit(node)
-        nodes = NodeFactory(node)
-        
-        node.body.insert(0, nodes.Expr(
-            nodes.Call(
-                func=nodes.Name(_trace_func_name, ast.Load()),
-                args=[nodes.Num(len(self.funcs))],
-                keywords=[],
-                starargs=None,
-                kwargs=None,
-            )
-        ))
-        
-        self.funcs.append(node)
-        
-        return node
-
-
-class NodeFactory(object):
-    def __init__(self, source_node):
-        self._source_node = source_node
-    
-    def __getattr__(self, name):
-        def create_node(*args, **kwargs):
-            return ast.copy_location(getattr(ast, name)(*args, **kwargs), self._source_node)
-        
-        return create_node
