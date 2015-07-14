@@ -35,8 +35,8 @@ print(repeat("hello ", 3))
                 "col_offset": 0
             }),
             "args": m.has_entries({
-                "x": str,
-                "y": int
+                "x": ("builtins", "str"),
+                "y": ("builtins", "int"),
             })
         })))
     

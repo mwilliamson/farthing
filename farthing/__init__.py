@@ -41,16 +41,14 @@ def _trace_subprocess(trace_path, argv, pipe):
             
             def trace_func(func_index):
                 func = transformer.funcs[func_index]
-                arg_names = [arg.arg for arg in func.args.args]
                 frame_record = inspect.stack()[1]
                 frame = frame_record[0]
-                actual_args = [
-                    frame.f_locals[name]
-                    for name in arg_names
-                ]
-                actual_arg_types = list(map(type, actual_args))
+                actual_arg_types = dict(
+                    _read_arg_type(frame, arg)
+                    for arg in func.args.args
+                )
                 
-                trace.append(TraceEntry(func, dict(zip(arg_names, actual_arg_types))))
+                trace.append(TraceEntry(func, actual_arg_types))
             
             setattr(builtins, _trace_func_name, trace_func)
             try:
@@ -62,7 +60,14 @@ def _trace_subprocess(trace_path, argv, pipe):
             sys.meta_path.remove(finder)
     finally:
         sys.argv[:] = original_argv
+
+
+def _read_arg_type(frame, arg_node):
+    actual_arg = frame.f_locals[arg_node.arg]
+    actual_arg_type = type(actual_arg)
+    return arg_node.arg, (actual_arg_type.__module__, actual_arg_type.__name__)
     
+
 
 class TraceEntry(object):
     def __init__(self, func, args):
