@@ -6,9 +6,8 @@ import uuid
 import builtins
 import multiprocessing
 import inspect
-from importlib.abc import MetaPathFinder, FileLoader
-from importlib.machinery import ModuleSpec, PathFinder
-from importlib.util import decode_source
+
+from . import importing
 
 
 __all__ = ["run"]
@@ -31,7 +30,7 @@ def _trace_subprocess(trace_path, argv, pipe):
         script_directory_path = os.path.dirname(argv[0])
         sys.path[0] = script_directory_path
         transformer = FunctionArgumentTracer()
-        finder = Finder(trace_path, transformer)
+        finder = importing.Finder(trace_path, transformer)
         sys.meta_path.insert(0, finder)
         try:
             sys.argv[:] = argv
@@ -68,35 +67,6 @@ class TraceEntry(object):
     def __init__(self, func, args):
         self.func = func
         self.args = args
-
-
-class Finder(MetaPathFinder):
-    def __init__(self, directory_path, transformer):
-        self._directory_path = directory_path
-        self._transformer = transformer
-        
-    
-    def find_spec(self, fullname, path, target=None):
-        module_spec = PathFinder.find_spec(fullname, path, target)
-        if module_spec and module_spec.has_location and self._is_in_directory(module_spec.origin):
-            return ModuleSpec(fullname, Loader(fullname, module_spec.origin, self._transformer))
-    
-    def _is_in_directory(self, path):
-        return os.path.commonprefix(list(map(os.path.normpath, [self._directory_path, path])))
-    
-
-class Loader(FileLoader):
-    def __init__(self, fullname, path, transformer):
-        super().__init__(fullname, path)
-        self._transformer = transformer
-    
-    def get_source(self, fullname):
-        with open(self.path, "rb") as source_file:
-            return decode_source(source_file.read())
-    
-    def source_to_code(self, data, path):
-        node = self._transformer.visit(ast.parse(data, path))
-        return compile(node, path, 'exec')
 
 
 _trace_func_name = str(uuid.uuid4())
