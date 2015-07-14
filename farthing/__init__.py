@@ -5,6 +5,7 @@ import uuid
 import builtins
 import multiprocessing
 import inspect
+import contextlib
 
 from . import importing
 from .transformer import FunctionTraceTransformer
@@ -27,16 +28,13 @@ def trace(trace_path, argv):
         raise Exception("subprocess exited without sending trace")
 
 def _trace_subprocess(trace_path, argv, pipe):
-    original_argv = sys.argv[:]
-    try:
+    with _override_sys_argv(argv):
         script_directory_path = os.path.dirname(argv[0])
         sys.path[0] = script_directory_path
         transformer = FunctionTraceTransformer(_trace_func_name)
         finder = importing.Finder(trace_path, transformer)
         sys.meta_path.insert(0, finder)
         try:
-            sys.argv[:] = argv
-            
             trace = []
             
             def trace_func(func_index):
@@ -58,15 +56,22 @@ def _trace_subprocess(trace_path, argv, pipe):
             pipe.send(trace)
         finally:
             sys.meta_path.remove(finder)
-    finally:
-        sys.argv[:] = original_argv
 
 
 def _read_arg_type(frame, arg_node):
     actual_arg = frame.f_locals[arg_node.arg]
     actual_arg_type = type(actual_arg)
     return arg_node.arg, (actual_arg_type.__module__, actual_arg_type.__name__)
-    
+
+
+@contextlib.contextmanager
+def _override_sys_argv(argv):
+    original_argv = sys.argv[:]
+    try:
+        sys.argv[:] = argv
+        yield
+    finally:
+        sys.argv[:] = original_argv
 
 
 class TraceEntry(object):
