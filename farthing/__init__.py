@@ -45,11 +45,8 @@ def _trace_subprocess(trace_path, argv, pipe):
                 
                 trace.append(TraceEntry(func, actual_arg_types))
             
-            setattr(builtins, _trace_func_name, trace_func)
-            try:
+            with _add_builtin(_trace_func_name, trace_func):
                 runpy.run_path(argv[0], run_name="__main__")
-            finally:
-                delattr(builtins, _trace_func_name)
             pipe.send(trace)
 
 
@@ -79,6 +76,15 @@ def _prioritise_module_finder(finder):
         yield
     finally:
         sys.meta_path.remove(finder)
+
+
+@contextlib.contextmanager
+def _add_builtin(key, value):
+    setattr(builtins, key, value)
+    try:
+        yield
+    finally:
+        delattr(builtins, key)
 
 
 class TraceEntry(object):
