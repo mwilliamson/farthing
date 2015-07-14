@@ -28,9 +28,7 @@ def trace(trace_path, argv):
         raise Exception("subprocess exited without sending trace")
 
 def _trace_subprocess(trace_path, argv, pipe):
-    with _override_sys_argv(argv):
-        script_directory_path = os.path.dirname(argv[0])
-        sys.path[0] = script_directory_path
+    with _override_argv(argv):
         transformer = FunctionTraceTransformer(_trace_func_name)
         finder = importing.Finder(trace_path, transformer)
         with _prioritise_module_finder(finder):
@@ -62,13 +60,16 @@ def _read_arg_type(frame, arg_node):
 
 
 @contextlib.contextmanager
-def _override_sys_argv(argv):
+def _override_argv(argv):
     original_argv = sys.argv[:]
+    original_path_0 = sys.path[0]
     try:
         sys.argv[:] = argv
+        sys.path[0] = os.path.dirname(argv[0])
         yield
     finally:
         sys.argv[:] = original_argv
+        sys.path[0] = original_path_0
 
 
 @contextlib.contextmanager
