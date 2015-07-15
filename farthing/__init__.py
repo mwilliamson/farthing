@@ -40,7 +40,7 @@ def _trace_subprocess(trace_path, argv, pipe):
                 frame = frame_record[0]
                 actual_arg_types = dict(
                     _read_arg_type(frame, arg)
-                    for arg in func.args.args
+                    for arg in (func.args.args + func.args.kwonlyargs)
                 )
                 
                 trace.append(TraceEntry(func, actual_arg_types))

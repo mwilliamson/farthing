@@ -18,9 +18,8 @@ def sys_argv_is_unchanged_by_running_trace():
         assert_equal(original_argv, sys.argv)
 
 
-
 @istest
-def type_of_arguments_is_traced():
+def type_of_positional_arguments_is_traced():
     program = """
 def repeat(x, y):
     return x * y
@@ -39,8 +38,29 @@ print(repeat("hello ", 3))
                 "y": ("builtins", "int"),
             })
         })))
-    
 
+
+@istest
+def type_of_keyword_only_arguments_is_traced():
+    program = """
+def repeat(x, *, y):
+    return x * y
+
+print(repeat("hello ", y=3))
+"""
+    with _program_with_module(program) as program:
+        trace = farthing.trace(program.directory_path, [program.run_path])
+        assert_that(trace, m.contains(m.has_properties({
+            "func": m.has_properties({
+                "lineno": 2,
+                "col_offset": 0
+            }),
+            "args": m.has_entries({
+                "x": ("builtins", "str"),
+                "y": ("builtins", "int"),
+            })
+        })))
+    
 
 @contextlib.contextmanager
 def _program_with_module(module):
