@@ -28,7 +28,7 @@ print(repeat("hello ", 3))
 """
     with _program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
-        assert_that(trace, m.contains(m.has_properties({
+        assert_that(trace, m.has_item(m.has_properties({
             "func": m.has_properties({
                 "lineno": 2,
                 "col_offset": 0
@@ -50,7 +50,7 @@ print(repeat("hello ", y=3))
 """
     with _program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
-        assert_that(trace, m.contains(m.has_properties({
+        assert_that(trace, m.has_item(m.has_properties({
             "func": m.has_properties({
                 "lineno": 2,
                 "col_offset": 0
@@ -74,6 +74,25 @@ def _program_with_module(module):
             module_file.write(module)
         
         yield _Program(directory.path, run_path)
+
+
+@istest
+def type_of_implicit_return_is_traced():
+    program = """
+def do_nothing():
+    pass
+
+print(do_nothing())
+"""
+    with _program_with_module(program) as program:
+        trace = farthing.trace(program.directory_path, [program.run_path])
+        assert_that(trace, m.has_item(m.has_properties({
+            "func": m.has_properties({
+                "lineno": 2,
+                "col_offset": 0
+            }),
+            "returns": ("builtins", "NoneType")
+        })))
 
 
 class _Program(object):

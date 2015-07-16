@@ -34,27 +34,42 @@ def _trace_subprocess(trace_path, argv, pipe):
         with _prioritise_module_finder(finder):
             trace = []
             
-            def trace_func(func_index):
+            def trace_func(trace_type, func_index, **kwargs):
                 func = transformer.funcs[func_index]
                 frame_record = inspect.stack()[1]
                 frame = frame_record[0]
-                actual_arg_types = dict(
-                    _read_arg_type(frame, arg)
-                    for arg in (func.args.args + func.args.kwonlyargs)
-                )
                 
-                trace.append(TraceEntry(func, actual_arg_types))
+                trace.append(_trace_entry(trace_type, func, frame, **kwargs))
             
             with _add_builtin(_trace_func_name, trace_func):
                 runpy.run_path(argv[0], run_name="__main__")
             pipe.send(trace)
 
+def _trace_entry(trace_type, func, frame, **kwargs):
+    return _traces[trace_type](func, frame, **kwargs)
+
+def _trace_entry_args(func, frame):
+    actual_arg_types = dict(
+        _read_arg_type(frame, arg)
+        for arg in (func.args.args + func.args.kwonlyargs)
+    )
+    
+    return TraceEntry(func, args=actual_arg_types)
 
 def _read_arg_type(frame, arg_node):
     actual_arg = frame.f_locals[arg_node.arg]
-    actual_arg_type = type(actual_arg)
-    return arg_node.arg, (actual_arg_type.__module__, actual_arg_type.__name__)
+    return arg_node.arg, _describe_type(type(actual_arg))
 
+def _trace_entry_returns(func, frame, returns):
+    return TraceEntry(func, returns=_describe_type(type(returns)))
+
+_traces = {
+    "args": _trace_entry_args,
+    "returns": _trace_entry_returns
+}
+
+def _describe_type(type_):
+    return type_.__module__, type_.__name__
 
 @contextlib.contextmanager
 def _override_argv(argv):
@@ -88,9 +103,13 @@ def _add_builtin(key, value):
 
 
 class TraceEntry(object):
-    def __init__(self, func, args):
+    def __init__(self, func, args=None, returns=None):
         self.func = func
         self.args = args
+        self.returns = returns
+
+    def __repr__(self):
+        return "TraceEntry({0}, args={1}, returns={2}".format(self.func, self.args, self.returns)
 
 
 _trace_func_name = str(uuid.uuid4())
