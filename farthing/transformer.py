@@ -9,6 +9,7 @@ class FunctionTraceTransformer(ast.NodeTransformer):
     
     def visit_FunctionDef(self, node):
         func_index = len(self.funcs)
+        self.funcs.append(node)
         self._func_stack.append(func_index)
         try:
             node = self.generic_visit(node)
@@ -17,7 +18,6 @@ class FunctionTraceTransformer(ast.NodeTransformer):
             node.body.insert(0, self._generate_trace_call(nodes, "args", func_index))
             node.body.append(self._generate_trace_returns_call(nodes, func_index, self._generate_none(nodes)))
             
-            self.funcs.append(node)
             
             return node
         finally:

@@ -132,6 +132,36 @@ print(answer())
         })))
 
 
+@istest
+def returns_from_inner_and_outer_function_can_be_distinguished():
+    program = """
+def answer():
+    def f():
+        return 42
+    return float(f())
+
+print(answer())
+"""
+    with _program_with_module(program) as program:
+        trace = farthing.trace(program.directory_path, [program.run_path])
+        assert_that(trace, m.has_items(
+            m.has_properties({
+                "func": m.has_properties({
+                    "lineno": 2,
+                    "col_offset": 0
+                }),
+                "returns": ("builtins", "float")
+            }),
+            m.has_properties({
+                "func": m.has_properties({
+                    "lineno": 3,
+                    "col_offset": 4
+                }),
+                "returns": ("builtins", "int")
+            }),
+        ))
+
+
 class _Program(object):
     def __init__(self, directory, run_path):
         self.directory_path = directory
