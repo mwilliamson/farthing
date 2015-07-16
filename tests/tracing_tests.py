@@ -94,6 +94,43 @@ print(do_nothing())
             "returns": ("builtins", "NoneType")
         })))
 
+@istest
+def type_of_return_with_implicit_value_is_traced():
+    program = """
+def do_nothing():
+    return
+
+print(do_nothing())
+"""
+    with _program_with_module(program) as program:
+        trace = farthing.trace(program.directory_path, [program.run_path])
+        assert_that(trace, m.has_item(m.has_properties({
+            "func": m.has_properties({
+                "lineno": 2,
+                "col_offset": 0
+            }),
+            "returns": ("builtins", "NoneType")
+        })))
+
+
+@istest
+def type_of_return_with_explicit_value_is_traced():
+    program = """
+def answer():
+    return 42
+
+print(answer())
+"""
+    with _program_with_module(program) as program:
+        trace = farthing.trace(program.directory_path, [program.run_path])
+        assert_that(trace, m.has_item(m.has_properties({
+            "func": m.has_properties({
+                "lineno": 2,
+                "col_offset": 0
+            }),
+            "returns": ("builtins", "int")
+        })))
+
 
 class _Program(object):
     def __init__(self, directory, run_path):
