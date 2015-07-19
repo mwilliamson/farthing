@@ -2,6 +2,8 @@ import runpy
 import uuid
 import multiprocessing
 import inspect
+import traceback
+import sys
 
 from . import importing, runtime
 from .transformer import FunctionTraceTransformer
@@ -41,7 +43,11 @@ def _trace_subprocess(trace_path, argv, pipe):
                 return _FunctionTracer(entry)
             
             with runtime.add_builtin(_trace_func_name, trace_func):
-                runpy.run_path(argv[0], run_name="__main__")
+                try:
+                    runpy.run_path(argv[0], run_name="__main__")
+                except:
+                    # Swallow any errors
+                    print(traceback.format_exc(), file=sys.stderr)
             pipe.send(trace)
 
 
@@ -51,6 +57,10 @@ class _FunctionTracer(object):
 
     def trace_return(self, returns):
         self._entry.returns = _describe_type(type(returns))
+    
+    def trace_raise(self):
+        raises = sys.exc_info()[1]
+        self._entry.raises = _describe_type(type(raises))
     
 
 def _trace_entry(func, frame):

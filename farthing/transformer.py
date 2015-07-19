@@ -13,16 +13,18 @@ class FunctionTraceTransformer(ast.NodeTransformer):
         try:
             node = self.generic_visit(node)
             nodes = _NodeFactory(node)
-        
-            node.body.insert(0, nodes.Assign(
-                [nodes.Name(_tracer_name(func_index), nodes.Store())],
-                nodes.call(
-                    func=nodes.Name(self._trace_func_name, ast.Load()),
-                    args=[nodes.Num(func_index)],
-                )
-            ))
-            node.body.append(self._generate_trace_returns_call(nodes, func_index, self._generate_none(nodes)))
             
+            body = node.body[:]
+            body.insert(0, self._generate_trace_call(nodes, func_index))
+            body.append(self._generate_trace_returns_call(nodes, func_index, self._generate_none(nodes)))
+            
+            # TODO: 
+            node.body[:] = [nodes.Try(body, [
+                nodes.ExceptHandler(None, None, [
+                    self._generate_trace_raises_call(nodes, func_index),
+                    nodes.Raise(None, None)
+                ])
+            ], [], [])]
             return node
         finally:
             self._func_stack.pop()
@@ -46,12 +48,26 @@ class FunctionTraceTransformer(ast.NodeTransformer):
     def _generate_none(self, nodes):
         return nodes.Name("None", nodes.Load())
     
+    def _generate_trace_call(self, nodes, func_index):
+        return nodes.Assign(
+            [nodes.Name(_tracer_name(func_index), nodes.Store())],
+            nodes.call(
+                func=nodes.Name(self._trace_func_name, ast.Load()),
+                args=[nodes.Num(func_index)],
+            )
+        )
+    
+    def _generate_trace_raises_call(self, nodes, func_index):
+        return self._generate_trace_result_call(nodes, func_index, "trace_raise")
     
     def _generate_trace_returns_call(self, nodes, func_index, value):
+        return self._generate_trace_result_call(nodes, func_index, "trace_return", value)
+    
+    def _generate_trace_result_call(self, nodes, func_index, name, *args):
         return nodes.Expr(
             nodes.call(
-                func=nodes.Attribute(nodes.Name(_tracer_name(func_index), nodes.Load()), "trace_return", nodes.Load()),
-                args=[value],
+                func=nodes.Attribute(nodes.Name(_tracer_name(func_index), nodes.Load()), name, nodes.Load()),
+                args=list(args),
             )
         )
 
