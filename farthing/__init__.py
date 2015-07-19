@@ -7,7 +7,7 @@ import sys
 
 from . import importing, runtime
 from .transformer import FunctionTraceTransformer
-from .entries import TraceEntry, Location
+from .entries import TraceEntry, create_location
 from .annotate import annotate
 from .ast_util import func_args
 
@@ -41,7 +41,7 @@ def _trace_subprocess(trace_path, argv, pipe):
                 frame_record = inspect.stack()[1]
                 frame = frame_record[0]
                 
-                location = Location(source_path, func.lineno, func.col_offset)
+                location = create_location(source_path, func.lineno, func.col_offset)
                 entry = _trace_entry(location, func, frame)
                 trace.append(entry)
                 return _FunctionTracer(entry)

@@ -2,6 +2,7 @@ import itertools
 import collections
 
 from .ast_util import func_args
+from .entries import FileLocation
 
 
 def annotate(log):
@@ -21,7 +22,7 @@ def _annotate_function(path, entries):
     func = entries[0].func
     for arg in filter(lambda arg: arg.annotation is None, func_args(func)):
         module, name = entries[0].args[arg.arg]
-        location = _Location(arg.lineno, arg.col_offset + len(arg.arg))
+        location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
         insertions.append(_arg_annotation_insertion(location, name))
     
     return_type_annotation = _return_type_annotation(path, func, entries[0].returns)
@@ -38,11 +39,11 @@ def _return_type_annotation(path, func, return_type):
     with open(path) as source_file:
         lines = source_file.readlines()
     
-    func_location = _Location(func.lineno, func.col_offset)
+    func_location = FileLocation(func.lineno, func.col_offset)
     args_start_location = _seek(lines, func_location, "(")
     # TODO: handle nested parens
     args_end_location = _seek(lines, args_start_location, ")")
-    location = _Location(args_end_location.lineno, args_end_location.col_offset + 1)
+    location = FileLocation(args_end_location.lineno, args_end_location.col_offset + 1)
     
     return _return_annotation_insertion(location, return_type[1])
 
@@ -50,7 +51,7 @@ def _seek(lines, location, char):
     # TODO: handle going on to next line
     line = lines[location.lineno - 1]
     col_offset = line.index(char, location.col_offset + 1)
-    return _Location(location.lineno, col_offset)
+    return FileLocation(location.lineno, col_offset)
     
 
 def _arg_annotation_insertion(location, annotation):
@@ -61,7 +62,6 @@ def _return_annotation_insertion(location, annotation):
 
 
 _Insertion = collections.namedtuple("_Insertion", ["location", "value"])
-_Location = collections.namedtuple("_Location", ["lineno", "col_offset"])
 
 
 def _insert_strings(path, insertions):
