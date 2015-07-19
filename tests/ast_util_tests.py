@@ -26,6 +26,26 @@ def repeat(x: (), y):
 """
 
         assert_equal(FileLocation(2, 20), _find_return_annotation_location(source))
+    
+    @istest
+    def handles_line_break_in_arguments(self):
+        source = """
+def repeat(x: (),
+        y):
+    return x * y
+"""
+
+        assert_equal(FileLocation(3, 10), _find_return_annotation_location(source))
+    
+    @istest
+    def handles_line_break_immediately_after_function_name(self):
+        source = """
+def repeat \\
+        (x: (), y):
+    return x * y
+"""
+
+        assert_equal(FileLocation(3, 18), _find_return_annotation_location(source))
 
 
 def _find_return_annotation_location(source):

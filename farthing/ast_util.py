@@ -25,7 +25,6 @@ def find_return_annotation_location(fileobj, func):
 
 
 def _seek(lines, location, char):
-    # TODO: handle going on to next line
     line = lines[location.lineno - 1]
     col_offset = line.index(char, location.col_offset + 1)
     return FileLocation(location.lineno, col_offset)
@@ -43,7 +42,12 @@ class _SourceReader(object):
             next(self)
     
     def __next__(self):
-        self._col_offset += 1
+        if self._col_offset < len(self._line()) - 1:
+            self._col_offset += 1
+        else:
+            self._lineno += 1
+            self._col_offset = 0
+        
         return self._char()
     
     def _line(self):
