@@ -24,7 +24,6 @@ def _annotate_function(path, entries):
         location = _Location(arg.lineno, arg.col_offset + len(arg.arg))
         insertions.append(_arg_annotation_insertion(location, name))
     
-    # TODO: check for existing annotation
     return_type_annotation = _return_type_annotation(path, func, entries[0].returns)
     if return_type_annotation is not None:
         insertions.append(return_type_annotation)
@@ -33,8 +32,9 @@ def _annotate_function(path, entries):
 
 
 def _return_type_annotation(path, func, return_type):
-    if return_type is None:
+    if return_type is None or func.returns is not None:
         return None
+    
     with open(path) as source_file:
         lines = source_file.readlines()
     
