@@ -35,21 +35,29 @@ def _trace_subprocess(trace_path, argv, pipe):
         with _prioritise_module_finder(finder):
             trace = []
             
-            def trace_func(trace_type, func_index, **kwargs):
+            def trace_func(func_index):
                 func = transformer.funcs[func_index]
                 frame_record = inspect.stack()[1]
                 frame = frame_record[0]
                 
-                trace.append(_trace_entry(trace_type, func, frame, **kwargs))
+                entry = _trace_entry(func, frame)
+                trace.append(entry)
+                return _FunctionTracer(entry)
             
             with _add_builtin(_trace_func_name, trace_func):
                 runpy.run_path(argv[0], run_name="__main__")
             pipe.send(trace)
 
-def _trace_entry(trace_type, func, frame, **kwargs):
-    return _traces[trace_type](func, frame, **kwargs)
 
-def _trace_entry_args(func, frame):
+class _FunctionTracer(object):
+    def __init__(self, entry):
+        self._entry = entry
+
+    def trace_return(self, returns):
+        self._entry.returns = _describe_type(type(returns))
+    
+
+def _trace_entry(func, frame):
     actual_arg_types = dict(
         _read_arg_type(frame, arg)
         for arg in (func.args.args + func.args.kwonlyargs)
@@ -60,14 +68,6 @@ def _trace_entry_args(func, frame):
 def _read_arg_type(frame, arg_node):
     actual_arg = frame.f_locals[arg_node.arg]
     return arg_node.arg, _describe_type(type(actual_arg))
-
-def _trace_entry_returns(func, frame, returns):
-    return TraceEntry(func, returns=_describe_type(type(returns)))
-
-_traces = {
-    "args": _trace_entry_args,
-    "returns": _trace_entry_returns
-}
 
 def _describe_type(type_):
     return type_.__module__, type_.__name__

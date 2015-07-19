@@ -1,6 +1,5 @@
 import ast
 
-
 class FunctionTraceTransformer(ast.NodeTransformer):
     def __init__(self, trace_func_name):
         self.funcs = []
@@ -15,9 +14,14 @@ class FunctionTraceTransformer(ast.NodeTransformer):
             node = self.generic_visit(node)
             nodes = _NodeFactory(node)
         
-            node.body.insert(0, self._generate_trace_call(nodes, "args", func_index))
+            node.body.insert(0, nodes.Assign(
+                [nodes.Name(_tracer_name(func_index), nodes.Store())],
+                nodes.call(
+                    func=nodes.Name(self._trace_func_name, ast.Load()),
+                    args=[nodes.Num(func_index)],
+                )
+            ))
             node.body.append(self._generate_trace_returns_call(nodes, func_index, self._generate_none(nodes)))
-            
             
             return node
         finally:
@@ -44,17 +48,10 @@ class FunctionTraceTransformer(ast.NodeTransformer):
     
     
     def _generate_trace_returns_call(self, nodes, func_index, value):
-        return self._generate_trace_call(nodes, "returns", func_index, returns=value)
-        
-    
-    def _generate_trace_call(self, nodes, trace_type, func_index, **kwargs):
         return nodes.Expr(
-            nodes.Call(
-                func=nodes.Name(self._trace_func_name, ast.Load()),
-                args=[nodes.Str(trace_type), nodes.Num(func_index)],
-                keywords=[nodes.keyword(key, value) for key, value in kwargs.items()],
-                starargs=None,
-                kwargs=None,
+            nodes.call(
+                func=nodes.Attribute(nodes.Name(_tracer_name(func_index), nodes.Load()), "trace_return", nodes.Load()),
+                args=[value],
             )
         )
 
@@ -68,4 +65,10 @@ class _NodeFactory(object):
             return ast.copy_location(getattr(ast, name)(*args, **kwargs), self._source_node)
         
         return create_node
+    
+    def call(self, func, args):
+        return self.Call(func=func, args=args, keywords=[], starargs=None, kwargs=None)
 
+
+def _tracer_name(func_index):
+    return "__farthing_tracer_{0}".format(func_index)
