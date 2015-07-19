@@ -7,7 +7,7 @@ from importlib.util import decode_source, spec_from_loader
 
 class Finder(MetaPathFinder):
     def __init__(self, directory_path, transformer):
-        self._directory_path = directory_path
+        self._directory_path = os.path.abspath(directory_path)
         self._transformer = transformer
         
     
@@ -19,7 +19,7 @@ class Finder(MetaPathFinder):
             return spec_from_loader(fullname, loader, origin=module_spec.origin, is_package=is_package)
     
     def _is_in_directory(self, path):
-        return os.path.commonprefix(list(map(os.path.normpath, [self._directory_path, path]))) == os.path.normpath(self._directory_path)
+        return os.path.commonprefix([self._directory_path, os.path.abspath(path)]) == self._directory_path
     
 
 class Loader(FileLoader):
