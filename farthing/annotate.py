@@ -19,8 +19,7 @@ def _annotate_function(path, entries):
     insertions = []
     
     func = entries[0].func
-    for arg in func_args(func):
-        # TODO: check for existing annotation
+    for arg in filter(lambda arg: arg.annotation is None, func_args(func)):
         module, name = entries[0].args[arg.arg]
         location = _Location(arg.lineno, arg.col_offset + len(arg.arg))
         insertions.append(_arg_annotation_insertion(location, name))

@@ -23,6 +23,25 @@ print(repeat("hello ", 3))
         assert_equal(typed_program, _read_file(program.module_path))
 
 
+@istest
+def existing_argument_annotations_are_retained():
+    program = """
+def repeat(x: object, y):
+    return x * y
+
+print(repeat("hello ", 3))
+"""
+    typed_program = """
+def repeat(x: object, y: int) -> str:
+    return x * y
+
+print(repeat("hello ", 3))
+"""
+    with program_with_module(program) as program:
+        farthing.run_and_annotate(program.directory_path, [program.run_path])
+        assert_equal(typed_program, _read_file(program.module_path))
+
+
 def _read_file(path):
     with open(path) as f:
         return f.read()
