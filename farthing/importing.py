@@ -17,7 +17,7 @@ class Finder(MetaPathFinder):
             return ModuleSpec(fullname, Loader(fullname, module_spec.origin, self._transformer))
     
     def _is_in_directory(self, path):
-        return os.path.commonprefix(list(map(os.path.normpath, [self._directory_path, path])))
+        return os.path.commonprefix(list(map(os.path.normpath, [self._directory_path, path]))) == os.path.normpath(self._directory_path)
     
 
 class Loader(FileLoader):
