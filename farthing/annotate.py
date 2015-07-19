@@ -11,8 +11,12 @@ def annotate(log):
 
 
 def _annotate_file(path, entries):
+    insertions = []
+    
     for location, func_entries in _grouped(entries, lambda entry: entry.location):
-        _annotate_function(path, list(func_entries))
+        insertions += _annotate_function(path, list(func_entries))
+    
+    _insert_strings(path, insertions)
 
 
 def _annotate_function(path, entries):
@@ -29,7 +33,7 @@ def _annotate_function(path, entries):
     if return_type_annotation is not None:
         insertions.append(return_type_annotation)
     
-    _insert_strings(path, insertions)
+    return insertions
 
 
 def _return_type_annotation(path, func, return_type):
