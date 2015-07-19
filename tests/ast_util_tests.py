@@ -17,6 +17,15 @@ def repeat(x, y):
 """
 
         assert_equal(FileLocation(2, 16), _find_return_annotation_location(source))
+    
+    @istest
+    def handles_nested_parens_in_function_signature(self):
+        source = """
+def repeat(x: (), y):
+    return x * y
+"""
+
+        assert_equal(FileLocation(2, 20), _find_return_annotation_location(source))
 
 
 def _find_return_annotation_location(source):

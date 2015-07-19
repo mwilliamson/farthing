@@ -7,11 +7,21 @@ def func_args(func):
 
 def find_return_annotation_location(fileobj, func):
     lines = fileobj.readlines()
-    func_location = FileLocation(func.lineno, func.col_offset)
-    args_start_location = _seek(lines, func_location, "(")
-    # TODO: handle nested parens
-    args_end_location = _seek(lines, args_start_location, ")")
-    return FileLocation(args_end_location.lineno, args_end_location.col_offset + 1)
+    reader = _SourceReader(lines)
+    
+    reader.seek(func.lineno, func.col_offset)
+    reader.seek_char("(")
+    next(reader)
+    depth = 1
+    while depth > 0:
+        character = next(reader)
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+    
+    next(reader)
+    return reader.location()
 
 
 def _seek(lines, location, char):
@@ -19,3 +29,28 @@ def _seek(lines, location, char):
     line = lines[location.lineno - 1]
     col_offset = line.index(char, location.col_offset + 1)
     return FileLocation(location.lineno, col_offset)
+
+class _SourceReader(object):
+    def __init__(self, lines):
+        self._lines = lines
+    
+    def seek(self, lineno, col_offset):
+        self._lineno = lineno
+        self._col_offset = col_offset
+    
+    def seek_char(self, value):
+        while self._char() != value:
+            next(self)
+    
+    def __next__(self):
+        self._col_offset += 1
+        return self._char()
+    
+    def _line(self):
+        return self._lines[self._lineno - 1]
+    
+    def _char(self):
+        return self._line()[self._col_offset]
+    
+    def location(self):
+        return FileLocation(self._lineno, self._col_offset)
