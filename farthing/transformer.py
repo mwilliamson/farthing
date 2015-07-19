@@ -1,14 +1,25 @@
 import ast
 
-class FunctionTraceTransformer(ast.NodeTransformer):
+class FunctionTraceTransformer(object):
     def __init__(self, trace_func_name):
         self.funcs = []
+        self._trace_func_name = trace_func_name
+    
+    def transform(self, path, node):
+        node_transformer = FunctionTraceNodeTransformer(self.funcs, path, self._trace_func_name)
+        return node_transformer.visit(node)
+
+
+class FunctionTraceNodeTransformer(ast.NodeTransformer):
+    def __init__(self, funcs, source_path, trace_func_name):
+        self._funcs = funcs
+        self._source_path = source_path
         self._trace_func_name = trace_func_name
         self._func_stack = []
     
     def visit_FunctionDef(self, node):
-        func_index = len(self.funcs)
-        self.funcs.append(node)
+        func_index = len(self._funcs)
+        self._funcs.append((self._source_path, node))
         self._func_stack.append(func_index)
         try:
             node = self.generic_visit(node)

@@ -30,5 +30,5 @@ class Loader(FileLoader):
             return decode_source(source_file.read())
     
     def source_to_code(self, data, path):
-        node = self._transformer.visit(ast.parse(data, path))
+        node = self._transformer.transform(path, ast.parse(data, path))
         return compile(node, path, 'exec')

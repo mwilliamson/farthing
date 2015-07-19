@@ -7,14 +7,17 @@ import sys
 
 from . import importing, runtime
 from .transformer import FunctionTraceTransformer
-from .entries import TraceEntry
+from .entries import TraceEntry, Location
+from .annotate import annotate
+from .ast_util import func_args
 
 
 __all__ = ["run"]
 
 
-def run(trace_path, argv):
-    trace(trace_path, argv)
+def run_and_annotate(trace_path, argv):
+    trace_log = trace(trace_path, argv)
+    annotate(trace_log)
 
 def trace(trace_path, argv):
     parent_connection, child_connection = multiprocessing.Pipe(False)
@@ -34,11 +37,12 @@ def _trace_subprocess(trace_path, argv, pipe):
             trace = []
             
             def trace_func(func_index):
-                func = transformer.funcs[func_index]
+                source_path, func = transformer.funcs[func_index]
                 frame_record = inspect.stack()[1]
                 frame = frame_record[0]
                 
-                entry = _trace_entry(func, frame)
+                location = Location(source_path, func.lineno, func.col_offset)
+                entry = _trace_entry(location, func, frame)
                 trace.append(entry)
                 return _FunctionTracer(entry)
             
@@ -64,13 +68,13 @@ class _FunctionTracer(object):
         self._entry.raises = _describe_type(type(raises))
     
 
-def _trace_entry(func, frame):
+def _trace_entry(location, func, frame):
     actual_arg_types = dict(
         _read_arg_type(frame, arg)
-        for arg in (func.args.args + func.args.kwonlyargs)
+        for arg in func_args(func)
     )
     
-    return TraceEntry(func, args=actual_arg_types)
+    return TraceEntry(location, func, args=actual_arg_types)
 
 def _read_arg_type(frame, arg_node):
     actual_arg = frame.f_locals[arg_node.arg]

@@ -1,21 +1,38 @@
 import sys
-import contextlib
-import os
 
-import tempman
 from nose.tools import istest, assert_equal
 from hamcrest import assert_that
 import hamcrest as m
 
 import farthing
+from .util import program_with_module
 
 
 @istest
 def sys_argv_is_unchanged_by_running_trace():
-    with _program_with_module("") as program:
+    with program_with_module("") as program:
         original_argv = sys.argv[:]
         farthing.trace(program.directory_path, [program.run_path])
         assert_equal(original_argv, sys.argv)
+
+
+@istest
+def location_of_functions_is_stored():
+    program = """
+def repeat(x, y):
+    return x * y
+
+print(repeat("hello ", 3))
+"""
+    with program_with_module(program) as program:
+        trace = farthing.trace(program.directory_path, [program.run_path])
+        assert_that(trace, m.contains(m.has_properties({
+            "location": m.has_properties({
+                "path": program.module_path,
+                "lineno": 2,
+                "col_offset": 0
+            }),
+        })))
 
 
 @istest
@@ -26,13 +43,10 @@ def repeat(x, y):
 
 print(repeat("hello ", 3))
 """
-    with _program_with_module(program) as program:
+    with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
-        assert_that(trace, m.has_item(m.has_properties({
-            "func": m.has_properties({
-                "lineno": 2,
-                "col_offset": 0
-            }),
+        assert_that(trace, m.contains(m.has_properties({
+            "func": _function_with_name("repeat"),
             "args": m.has_entries({
                 "x": ("builtins", "str"),
                 "y": ("builtins", "int"),
@@ -48,7 +62,7 @@ def repeat(x, *, y):
 
 print(repeat("hello ", y=3))
 """
-    with _program_with_module(program) as program:
+    with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
             "func": m.has_properties({
@@ -60,20 +74,6 @@ print(repeat("hello ", y=3))
                 "y": ("builtins", "int"),
             })
         })))
-    
-
-@contextlib.contextmanager
-def _program_with_module(module):
-    with tempman.create_temp_dir() as directory:
-        run_path = os.path.join(directory.path, "run.py")
-        module_path = os.path.join(directory.path, "main.py")
-        
-        with open(run_path, "w") as run_file:
-            run_file.write("import main")
-        with open(module_path, "w") as module_file:
-            module_file.write(module)
-        
-        yield _Program(directory.path, run_path)
 
 
 @istest
@@ -84,7 +84,7 @@ def do_nothing():
 
 print(do_nothing())
 """
-    with _program_with_module(program) as program:
+    with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
             "func": m.has_properties({
@@ -102,7 +102,7 @@ def do_nothing():
 
 print(do_nothing())
 """
-    with _program_with_module(program) as program:
+    with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
             "func": m.has_properties({
@@ -121,7 +121,7 @@ def answer():
 
 print(answer())
 """
-    with _program_with_module(program) as program:
+    with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
             "func": m.has_properties({
@@ -142,7 +142,7 @@ def answer():
 
 print(answer())
 """
-    with _program_with_module(program) as program:
+    with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_items(
             m.has_properties({
@@ -170,7 +170,7 @@ def do_nothing():
 
 print(do_nothing())
 """
-    with _program_with_module(program) as program:
+    with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
             "func": m.has_properties({
@@ -182,7 +182,7 @@ print(do_nothing())
         })))
 
 
-class _Program(object):
-    def __init__(self, directory, run_path):
-        self.directory_path = directory
-        self.run_path = run_path
+def _function_with_name(name):
+    return m.has_properties({
+        "name": name,
+    })

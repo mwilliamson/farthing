@@ -4,4 +4,4 @@ import farthing
 import sys
 
 
-farthing.run(trace_path=sys.argv[1], argv=sys.argv[2:])
+farthing.run_and_annotate(path=sys.argv[1], argv=sys.argv[2:])
