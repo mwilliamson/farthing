@@ -57,6 +57,7 @@ class _FunctionTracer(object):
 
     def trace_return(self, returns):
         self._entry.returns = _describe_type(type(returns))
+        return returns
     
     def trace_raise(self):
         raises = sys.exc_info()[1]
