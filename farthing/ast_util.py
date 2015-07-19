@@ -11,7 +11,6 @@ def find_return_annotation_location(fileobj, func):
     
     reader.seek(func.lineno, func.col_offset)
     reader.seek_char("(")
-    next(reader)
     depth = 1
     while depth > 0:
         character = next(reader)
