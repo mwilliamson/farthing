@@ -5,7 +5,7 @@ import farthing
 
 
 @istest
-def arguments_have_types_added_as_annotations():
+def arguments_and_return_value_have_types_added_as_annotations():
     program = """
 def repeat(x, y):
     return x * y
@@ -13,7 +13,7 @@ def repeat(x, y):
 print(repeat("hello ", 3))
 """
     typed_program = """
-def repeat(x: str, y: int):
+def repeat(x: str, y: int) -> str:
     return x * y
 
 print(repeat("hello ", 3))

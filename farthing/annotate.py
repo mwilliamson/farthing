@@ -15,15 +15,47 @@ def _annotate_file(path, entries):
 
 
 def _annotate_function(path, entries):
+    # TODO: investigate libraries that will allow editing of nodes while preserving concrete syntax
     insertions = []
     
     func = entries[0].func
     for arg in func_args(func):
+        # TODO: check for existing annotation
         module, name = entries[0].args[arg.arg]
         location = _Location(arg.lineno, arg.col_offset + len(arg.arg))
-        insertions.append(_Insertion(location, ": {0}".format(name)))
+        insertions.append(_arg_annotation_insertion(location, name))
+    
+    # TODO: check for existing annotation
+    # TODO: handle no return type (due to exceptions)
+    insertions.append(_return_type_annotation(path, func, entries[0].returns))
     
     _insert_strings(path, insertions)
+
+
+def _return_type_annotation(path, func, return_type):
+    with open(path) as source_file:
+        lines = source_file.readlines()
+    
+    func_location = _Location(func.lineno, func.col_offset)
+    args_start_location = _seek(lines, func_location, "(")
+    # TODO: handle nested parens
+    args_end_location = _seek(lines, args_start_location, ")")
+    location = _Location(args_end_location.lineno, args_end_location.col_offset + 1)
+    
+    return _return_annotation_insertion(location, return_type[1])
+
+def _seek(lines, location, char):
+    # TODO: handle going on to next line
+    line = lines[location.lineno - 1]
+    col_offset = line.index(char, location.col_offset + 1)
+    return _Location(location.lineno, col_offset)
+    
+
+def _arg_annotation_insertion(location, annotation):
+    return _Insertion(location, ": {0}".format(annotation))
+
+def _return_annotation_insertion(location, annotation):
+    return _Insertion(location, " -> {0}".format(annotation))
 
 
 _Insertion = collections.namedtuple("_Insertion", ["location", "value"])
