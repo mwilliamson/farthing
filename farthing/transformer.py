@@ -18,7 +18,6 @@ class FunctionTraceTransformer(ast.NodeTransformer):
             body.insert(0, self._generate_trace_call(nodes, func_index))
             body.append(nodes.Expr(self._generate_trace_returns_call(nodes, func_index, self._generate_none(nodes))))
             
-            # TODO: 
             node.body[:] = [nodes.Try(body, [
                 nodes.ExceptHandler(None, None, [
                     nodes.Expr(self._generate_trace_raises_call(nodes, func_index)),
