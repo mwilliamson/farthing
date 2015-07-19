@@ -1,4 +1,5 @@
 import itertools
+import collections
 
 from .ast_util import func_args
 
@@ -14,31 +15,34 @@ def _annotate_file(path, entries):
 
 
 def _annotate_function(path, entries):
-    source = _SourceFile(path)
+    insertions = []
     
     func = entries[0].func
-    # TODO: rather than reversing, have _SourceFile keep track of insertions and handle appropriately
-    for arg in reversed(func_args(func)):
+    for arg in func_args(func):
         module, name = entries[0].args[arg.arg]
-        source.insert((arg.lineno, arg.col_offset + len(arg.arg)), ": {0}".format(name))
+        location = _Location(arg.lineno, arg.col_offset + len(arg.arg))
+        insertions.append(_Insertion(location, ": {0}".format(name)))
     
-    source.save()
+    _insert_strings(path, insertions)
 
 
-class _SourceFile():
-    def __init__(self, path):
-        self.path = path
-        with open(path) as source_file:
-            self._lines = list(source_file.readlines())
+_Insertion = collections.namedtuple("_Insertion", ["location", "value"])
+_Location = collections.namedtuple("_Location", ["lineno", "col_offset"])
+
+
+def _insert_strings(path, insertions):
+    with open(path) as source_file:
+        lines = list(source_file.readlines())
     
-    def insert(self, location, value):
-        lineno, col_offset = location
-        line_index = lineno - 1
-        self._lines[line_index] = _str_insert(self._lines[line_index], col_offset, value)
+    insertions = sorted(insertions, key=lambda insertion: insertion.location, reverse=True)
     
-    def save(self):
-        with open(self.path, "w") as source_file:
-            source_file.write("".join(self._lines))
+    for insertion in insertions:
+        line_index = insertion.location.lineno - 1
+        col_offset = insertion.location.col_offset
+        lines[line_index] = _str_insert(lines[line_index], col_offset, insertion.value)
+    
+    with open(path, "w") as source_file:
+        source_file.write("".join(lines))
 
 
 def _str_insert(original, index, to_insert):
