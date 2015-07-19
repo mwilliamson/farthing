@@ -5,7 +5,7 @@ def func_args(func):
     return func.args.args + func.args.kwonlyargs
 
 
-def return_annotation_location(fileobj, func):
+def find_return_annotation_location(fileobj, func):
     lines = fileobj.readlines()
     func_location = FileLocation(func.lineno, func.col_offset)
     args_start_location = _seek(lines, func_location, "(")

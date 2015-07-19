@@ -1,7 +1,7 @@
 import itertools
 import collections
 
-from .ast_util import func_args, return_annotation_location
+from .ast_util import func_args, find_return_annotation_location
 from .entries import FileLocation
 
 
@@ -37,7 +37,7 @@ def _return_type_annotation(path, func, return_type):
         return None
     
     with open(path) as source_file:
-        location = return_annotation_location(source_file, func)
+        location = find_return_annotation_location(source_file, func)
     return _return_annotation_insertion(location, return_type[1])
     
 
