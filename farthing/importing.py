@@ -1,8 +1,8 @@
 import os
 import ast
 from importlib.abc import MetaPathFinder, FileLoader
-from importlib.machinery import ModuleSpec, PathFinder
-from importlib.util import decode_source
+from importlib.machinery import PathFinder, SourceFileLoader
+from importlib.util import decode_source, spec_from_loader
 
 
 class Finder(MetaPathFinder):
@@ -14,7 +14,9 @@ class Finder(MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
         module_spec = PathFinder.find_spec(fullname, path, target)
         if module_spec and module_spec.has_location and self._is_in_directory(module_spec.origin):
-            return ModuleSpec(fullname, Loader(fullname, module_spec.origin, self._transformer))
+            loader = Loader(fullname, module_spec.origin, self._transformer)
+            is_package = os.path.basename(module_spec.origin).lower() == "__init__.py"
+            return spec_from_loader(fullname, loader, origin=module_spec.origin, is_package=is_package)
     
     def _is_in_directory(self, path):
         return os.path.commonprefix(list(map(os.path.normpath, [self._directory_path, path]))) == os.path.normpath(self._directory_path)
