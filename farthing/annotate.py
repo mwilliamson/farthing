@@ -25,13 +25,16 @@ def _annotate_function(path, entries):
         insertions.append(_arg_annotation_insertion(location, name))
     
     # TODO: check for existing annotation
-    # TODO: handle no return type (due to exceptions)
-    insertions.append(_return_type_annotation(path, func, entries[0].returns))
+    return_type_annotation = _return_type_annotation(path, func, entries[0].returns)
+    if return_type_annotation is not None:
+        insertions.append(return_type_annotation)
     
     _insert_strings(path, insertions)
 
 
 def _return_type_annotation(path, func, return_type):
+    if return_type is None:
+        return None
     with open(path) as source_file:
         lines = source_file.readlines()
     
