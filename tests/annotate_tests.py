@@ -80,6 +80,31 @@ print(repeat("hello ", 3))
         assert_equal(typed_program, _read_file(program.module_path))
 
 
+@istest
+def can_annotate_multiple_functions_in_one_file():
+    program = """
+def f(x):
+    return x
+
+def g(x):
+    return x
+
+print(f(2) + g(3))
+"""
+    typed_program = """
+def f(x: int) -> int:
+    return x
+
+def g(x: int) -> int:
+    return x
+
+print(f(2) + g(3))
+"""
+    with program_with_module(program) as program:
+        farthing.run_and_annotate(program.directory_path, [program.run_path])
+        assert_equal(typed_program, _read_file(program.module_path))
+
+
 def _read_file(path):
     with open(path) as f:
         return f.read()
