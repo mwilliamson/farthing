@@ -1,13 +1,9 @@
 import runpy
-import sys
-import os
 import uuid
-import builtins
 import multiprocessing
 import inspect
-import contextlib
 
-from . import importing
+from . import importing, runtime
 from .transformer import FunctionTraceTransformer
 from .entries import TraceEntry
 
@@ -29,10 +25,10 @@ def trace(trace_path, argv):
         raise Exception("subprocess exited without sending trace")
 
 def _trace_subprocess(trace_path, argv, pipe):
-    with _override_argv(argv):
+    with runtime.override_argv(argv):
         transformer = FunctionTraceTransformer(_trace_func_name)
         finder = importing.Finder(trace_path, transformer)
-        with _prioritise_module_finder(finder):
+        with runtime.prioritise_module_finder(finder):
             trace = []
             
             def trace_func(func_index):
@@ -44,7 +40,7 @@ def _trace_subprocess(trace_path, argv, pipe):
                 trace.append(entry)
                 return _FunctionTracer(entry)
             
-            with _add_builtin(_trace_func_name, trace_func):
+            with runtime.add_builtin(_trace_func_name, trace_func):
                 runpy.run_path(argv[0], run_name="__main__")
             pipe.send(trace)
 
@@ -71,36 +67,6 @@ def _read_arg_type(frame, arg_node):
 
 def _describe_type(type_):
     return type_.__module__, type_.__name__
-
-@contextlib.contextmanager
-def _override_argv(argv):
-    original_argv = sys.argv[:]
-    original_path_0 = sys.path[0]
-    try:
-        sys.argv[:] = argv
-        sys.path[0] = os.path.dirname(argv[0])
-        yield
-    finally:
-        sys.argv[:] = original_argv
-        sys.path[0] = original_path_0
-
-
-@contextlib.contextmanager
-def _prioritise_module_finder(finder):
-    sys.meta_path.insert(0, finder)
-    try:
-        yield
-    finally:
-        sys.meta_path.remove(finder)
-
-
-@contextlib.contextmanager
-def _add_builtin(key, value):
-    setattr(builtins, key, value)
-    try:
-        yield
-    finally:
-        delattr(builtins, key)
 
 
 _trace_func_name = str(uuid.uuid4())
