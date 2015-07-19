@@ -3,7 +3,7 @@ import ast
 
 from nose.tools import istest, assert_equal
 
-from farthing.entries import FileLocation
+from farthing.locations import FileLocation
 from farthing.ast_util import find_return_annotation_location
 
 

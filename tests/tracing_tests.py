@@ -46,7 +46,10 @@ print(repeat("hello ", 3))
     with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.contains(m.has_properties({
-            "func": _function_with_name("repeat"),
+            "location": m.has_properties({
+                "lineno": 2,
+                "col_offset": 0
+            }),
             "args": m.has_entries({
                 "x": ("builtins", "str"),
                 "y": ("builtins", "int"),
@@ -65,7 +68,7 @@ print(repeat("hello ", y=3))
     with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
-            "func": m.has_properties({
+            "location": m.has_properties({
                 "lineno": 2,
                 "col_offset": 0
             }),
@@ -87,7 +90,7 @@ print(do_nothing())
     with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
-            "func": m.has_properties({
+            "location": m.has_properties({
                 "lineno": 2,
                 "col_offset": 0
             }),
@@ -105,7 +108,7 @@ print(do_nothing())
     with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
-            "func": m.has_properties({
+            "location": m.has_properties({
                 "lineno": 2,
                 "col_offset": 0
             }),
@@ -124,7 +127,7 @@ print(answer())
     with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
-            "func": m.has_properties({
+            "location": m.has_properties({
                 "lineno": 2,
                 "col_offset": 0
             }),
@@ -146,14 +149,14 @@ print(answer())
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_items(
             m.has_properties({
-                "func": m.has_properties({
+                "location": m.has_properties({
                     "lineno": 2,
                     "col_offset": 0
                 }),
                 "returns": ("builtins", "float")
             }),
             m.has_properties({
-                "func": m.has_properties({
+                "location": m.has_properties({
                     "lineno": 3,
                     "col_offset": 4
                 }),
@@ -173,16 +176,10 @@ print(do_nothing())
     with program_with_module(program) as program:
         trace = farthing.trace(program.directory_path, [program.run_path])
         assert_that(trace, m.has_item(m.has_properties({
-            "func": m.has_properties({
+            "location": m.has_properties({
                 "lineno": 2,
                 "col_offset": 0
             }),
             "returns": None,
             "raises": ("builtins", "AssertionError")
         })))
-
-
-def _function_with_name(name):
-    return m.has_properties({
-        "name": name,
-    })

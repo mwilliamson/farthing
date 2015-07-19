@@ -2,7 +2,7 @@ import itertools
 import collections
 
 from .ast_util import func_args, find_return_annotation_location
-from .entries import FileLocation
+from .locations import FileLocation
 
 
 def annotate(log):

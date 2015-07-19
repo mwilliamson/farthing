@@ -7,7 +7,8 @@ import sys
 
 from . import importing, runtime
 from .transformer import FunctionTraceTransformer
-from .entries import TraceEntry, create_location
+from .entries import TraceEntry
+from .locations import create_location
 from .annotate import annotate
 from .ast_util import func_args
 
@@ -23,11 +24,15 @@ def trace(trace_path, argv):
     parent_connection, child_connection = multiprocessing.Pipe(False)
     process = multiprocessing.Process(target=_trace_subprocess, args=(trace_path, argv, child_connection))
     process.start()
-    process.join()
-    if parent_connection.poll():
-        return parent_connection.recv()
-    else:
-        raise Exception("subprocess exited without sending trace")
+    
+    trace = []
+    while True:
+        entry = parent_connection.recv()
+        if entry == "END":
+            process.join()
+            return trace
+        else:
+            trace.append(TraceEntry.from_tuple(entry))
 
 def _trace_subprocess(trace_path, argv, pipe):
     with runtime.override_argv(argv):
@@ -52,7 +57,11 @@ def _trace_subprocess(trace_path, argv, pipe):
                 except:
                     # Swallow any errors
                     print(traceback.format_exc(), file=sys.stderr)
-            pipe.send(trace)
+            
+            
+            for entry in trace:
+                pipe.send(entry.to_tuple())
+            pipe.send("END")
 
 
 class _FunctionTracer(object):

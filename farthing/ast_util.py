@@ -1,8 +1,18 @@
-from .entries import FileLocation
+import ast
+
+from .locations import FileLocation
 
 
 def func_args(func):
     return func.args.args + func.args.kwonlyargs
+
+
+def load_func(location):
+    with open(location.path) as source_file:
+        for node in ast.walk(ast.parse(source_file.read())):
+            node_location = FileLocation(getattr(node, "lineno", None), getattr(node, "col_offset", None))
+            if node_location == location.in_file:
+                return node
 
 
 def find_return_annotation_location(fileobj, func):
