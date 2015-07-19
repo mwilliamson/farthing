@@ -1,7 +1,7 @@
 import os
 import ast
 from importlib.abc import MetaPathFinder, FileLoader
-from importlib.machinery import PathFinder, SourceFileLoader
+from importlib.machinery import PathFinder
 from importlib.util import decode_source, spec_from_loader
 
 
