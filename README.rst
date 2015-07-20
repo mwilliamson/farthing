@@ -1,5 +1,5 @@
-Farthing: automatically add type annotations to Python source code by running it
-================================================================================
+Farthing: generate type annotations for Python source code by running it
+========================================================================
 
 Farthing will run arbitrary Python code while tracing the argument and return
 types of all functions within a given file or directory. Farthing can then
