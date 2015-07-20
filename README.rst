@@ -4,7 +4,9 @@ Farthing: generate type annotations for Python source code by running it
 Farthing will run arbitrary Python code while tracing the argument and return
 types of all functions within a given file or directory. Farthing can then
 automatically add type annotations based on the types of the values it saw
-during the execution run.
+during the execution run. This might be useful if you want to add static types
+to existing Python code, or for exploring codebases where you're not sure what
+type a value has.
 
 For instance, the following code:
 
