@@ -3,6 +3,7 @@ import collections
 
 from .ast_util import func_args, find_return_annotation_location
 from .locations import FileLocation
+from .supertype import common_super_type
 
 
 def annotate(log):
@@ -25,11 +26,11 @@ def _annotate_function(path, entries):
     
     func = entries[0].func
     for arg in filter(lambda arg: arg.annotation is None, func_args(func)):
-        module, name = entries[0].args[arg.arg]
+        module, name = common_super_type([entry.args[arg.arg] for entry in entries])
         location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
         insertions.append(_arg_annotation_insertion(location, name))
     
-    return_type_annotation = _return_type_annotation(path, func, entries[0].returns)
+    return_type_annotation = _return_type_annotation(path, func, common_super_type([entry.returns for entry in entries]))
     if return_type_annotation is not None:
         insertions.append(return_type_annotation)
     
