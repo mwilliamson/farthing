@@ -4,6 +4,7 @@ import collections
 from .ast_util import func_args, find_return_annotation_location
 from .locations import FileLocation
 from .supertype import common_super_type
+from . import types
 
 
 def annotate(log):
@@ -26,11 +27,11 @@ def _annotate_function(path, entries):
     
     func = entries[0].func
     for arg in filter(lambda arg: arg.annotation is None, func_args(func)):
-        module, name = common_super_type([entry.args[arg.arg] for entry in entries])
+        type_ = common_super_type(entry.args[arg.arg] for entry in entries)
         location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
-        insertions.append(_arg_annotation_insertion(location, name))
+        insertions.append(_arg_annotation_insertion(location, type_))
     
-    return_type_annotation = _return_type_annotation(path, func, common_super_type([entry.returns for entry in entries]))
+    return_type_annotation = _return_type_annotation(path, func, common_super_type(entry.returns for entry in entries))
     if return_type_annotation is not None:
         insertions.append(return_type_annotation)
     
@@ -43,14 +44,22 @@ def _return_type_annotation(path, func, return_type):
     
     with open(path) as source_file:
         location = find_return_annotation_location(source_file, func)
-    return _return_annotation_insertion(location, return_type[1])
+    return _return_annotation_insertion(location, return_type)
     
 
-def _arg_annotation_insertion(location, annotation):
-    return _Insertion(location, ": {0}".format(annotation))
+def _arg_annotation_insertion(location, type_):
+    return _Insertion(location, ": {0}".format(_format_type(type_)))
 
-def _return_annotation_insertion(location, annotation):
-    return _Insertion(location, " -> {0}".format(annotation))
+def _return_annotation_insertion(location, type_):
+    return _Insertion(location, " -> {0}".format(_format_type(type_)))
+
+def _format_type(type_):
+    if type_ == types.describe(type(None)):
+        return "None"
+    elif isinstance(type_, types.Union):
+        return "Union({0})".format(", ".join(sorted(map(_format_type, type_.values))))
+    else:
+        return type_[1]
 
 
 _Insertion = collections.namedtuple("_Insertion", ["location", "value"])

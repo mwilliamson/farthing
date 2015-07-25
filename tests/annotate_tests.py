@@ -23,6 +23,32 @@ print(repeat("hello ", 3))
         assert_equal(typed_program, _read_file(program.module_path))
 
 
+# TODO: split actual annotation from generation of types to remove duplication in tests
+@istest
+def types_can_be_union():
+    program = """
+def repeat(x, y):
+    if y is None:
+        y = 2
+    return x * y
+
+print(repeat("hello ", 3))
+print(repeat("hello ", None))
+"""
+    typed_program = """
+def repeat(x: str, y: Union(None, int)) -> str:
+    if y is None:
+        y = 2
+    return x * y
+
+print(repeat("hello ", 3))
+print(repeat("hello ", None))
+"""
+    with program_with_module(program) as program:
+        farthing.run_and_annotate(program.directory_path, [program.run_path])
+        assert_equal(typed_program, _read_file(program.module_path))
+
+
 @istest
 def existing_argument_annotations_are_retained():
     program = """
