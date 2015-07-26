@@ -6,7 +6,7 @@ def describe(type_):
 
 
 def union(values):
-    return Union(set(values))
+    return Union(frozenset(values))
 
 
 Class = collections.namedtuple("Class", ["module", "name"])
