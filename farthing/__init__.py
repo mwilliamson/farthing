@@ -36,6 +36,14 @@ def trace(trace_path, argv):
             trace.append(TraceEntry.from_tuple(entry))
 
 def _trace_subprocess(trace_path, argv, pipe):
+    trace = _generate_trace(trace_path, argv)
+    
+    for entry in trace:
+        pipe.send(entry.to_tuple())
+    pipe.send("END")
+
+
+def _generate_trace(trace_path, argv):
     with runtime.override_argv(argv):
         transformer = FunctionTraceTransformer(_trace_func_name)
         finder = importing.Finder(trace_path, transformer)
@@ -58,11 +66,8 @@ def _trace_subprocess(trace_path, argv, pipe):
                 except:
                     # Swallow any errors
                     print(traceback.format_exc(), file=sys.stderr)
-            
-            
-            for entry in trace:
-                pipe.send(entry.to_tuple())
-            pipe.send("END")
+    
+    return trace
 
 
 class _FunctionTracer(object):
