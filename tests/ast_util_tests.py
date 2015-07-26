@@ -28,6 +28,16 @@ def repeat():
         assert_equal(FileLocation(2, 12), _find_return_annotation_location(source))
     
     @istest
+    def handles_function_with_function_call_decorator(self):
+        source = """
+@cached()
+def repeat():
+    return x * y
+"""
+
+        assert_equal(FileLocation(3, 12), _find_return_annotation_location(source))
+    
+    @istest
     def handles_nested_parens_in_function_signature(self):
         source = """
 def repeat(x: (), y):
