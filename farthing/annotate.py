@@ -59,7 +59,7 @@ def _format_type(type_):
     elif isinstance(type_, types.Union):
         return "Union[{0}]".format(", ".join(sorted(map(_format_type, type_.values))))
     else:
-        return type_[1]
+        return type_.name
 
 
 _Insertion = collections.namedtuple("_Insertion", ["location", "value"])
