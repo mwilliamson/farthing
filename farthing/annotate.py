@@ -3,8 +3,8 @@ import collections
 from .ast_util import func_args, find_return_annotation_location
 from .locations import FileLocation
 from .supertype import common_super_type
-from . import types
 from .iterables import grouped
+from .pep484 import format_type
 
 
 def annotate(log):
@@ -48,18 +48,10 @@ def _return_type_annotation(path, func, return_type):
     
 
 def _arg_annotation_insertion(location, type_):
-    return _Insertion(location, ": {0}".format(_format_type(type_)))
+    return _Insertion(location, ": {0}".format(format_type(type_)))
 
 def _return_annotation_insertion(location, type_):
-    return _Insertion(location, " -> {0}".format(_format_type(type_)))
-
-def _format_type(type_):
-    if type_ == types.describe(type(None)):
-        return "None"
-    elif isinstance(type_, types.Union):
-        return "Union[{0}]".format(", ".join(sorted(map(_format_type, type_.values))))
-    else:
-        return type_.name
+    return _Insertion(location, " -> {0}".format(format_type(type_)))
 
 
 _Insertion = collections.namedtuple("_Insertion", ["location", "value"])

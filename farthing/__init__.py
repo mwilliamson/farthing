@@ -10,7 +10,7 @@ from .entries import TraceEntry
 from .locations import create_location
 from .annotate import annotate
 from .ast_util import func_args
-from .types import describe_type_of
+from .type_sniffing import describe_type_of
 
 
 __all__ = ["run"]
