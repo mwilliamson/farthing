@@ -1,7 +1,6 @@
 import runpy
 import uuid
 import multiprocessing
-import inspect
 import traceback
 import sys
 
@@ -52,8 +51,7 @@ def _generate_trace(trace_path, argv):
             
             def trace_func(func_index):
                 source_path, func = transformer.funcs[func_index]
-                frame_record = inspect.stack()[1]
-                frame = frame_record[0]
+                frame = sys._getframe(1)
                 
                 location = create_location(source_path, func.lineno, func.col_offset)
                 entry = _trace_entry(location, func, frame)
