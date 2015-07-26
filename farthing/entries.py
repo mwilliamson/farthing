@@ -1,4 +1,5 @@
-from .ast_util import load_func
+from .ast_util import load_funcs
+from .iterables import grouped
 
 
 class TraceEntry(object):
@@ -16,10 +17,18 @@ class TraceEntry(object):
         return (self.location, self.args, self.returns, self.raises)
     
     @staticmethod
-    def from_tuple(value):
-        location, args, returns, raises = value
-        func = load_func(location)
-        entry = TraceEntry(location, func, args)
-        entry.returns = returns
-        entry.raises = raises
-        return entry
+    def from_tuples(values):
+        values_by_file = grouped(values, key=lambda value: value[0].path)
+        
+        entries = []
+        
+        for path, values_in_file in values_by_file:
+            funcs = load_funcs(path)
+            for location, args, returns, raises in values_in_file:
+                func = funcs[location.in_file]
+                entry = TraceEntry(location, func, args)
+                entry.returns = returns
+                entry.raises = raises
+                entries.append(entry)
+        
+        return entries

@@ -25,14 +25,14 @@ def trace(trace_path, argv):
     process = multiprocessing.Process(target=_trace_subprocess, args=(trace_path, argv, child_connection))
     process.start()
     
-    trace = []
+    entry_tuples = []
     while True:
-        entry = parent_connection.recv()
-        if entry == "END":
+        entry_tuple = parent_connection.recv()
+        if entry_tuple == "END":
             process.join()
-            return trace
+            return TraceEntry.from_tuples(entry_tuples)
         else:
-            trace.append(TraceEntry.from_tuple(entry))
+            entry_tuples.append(entry_tuple)
 
 def _trace_subprocess(trace_path, argv, pipe):
     trace = _generate_trace(trace_path, argv)

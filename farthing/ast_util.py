@@ -7,12 +7,17 @@ def func_args(func):
     return func.args.args + func.args.kwonlyargs
 
 
-def load_func(location):
-    with open(location.path) as source_file:
-        for node in ast.walk(ast.parse(source_file.read())):
-            node_location = FileLocation(getattr(node, "lineno", None), getattr(node, "col_offset", None))
-            if node_location == location.in_file:
-                return node
+def load_funcs(path):
+    with open(path) as source_file:
+        return dict(
+            (_node_location(node), node)
+            for node in ast.walk(ast.parse(source_file.read()))
+            if isinstance(node, ast.FunctionDef)
+        )
+
+
+def _node_location(node):
+    return FileLocation(getattr(node, "lineno", None), getattr(node, "col_offset", None))
 
 
 def find_return_annotation_location(fileobj, func):

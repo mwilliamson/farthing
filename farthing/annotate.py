@@ -1,21 +1,21 @@
-import itertools
 import collections
 
 from .ast_util import func_args, find_return_annotation_location
 from .locations import FileLocation
 from .supertype import common_super_type
 from . import types
+from .iterables import grouped
 
 
 def annotate(log):
-    for path, entries in _grouped(log, lambda entry: entry.location.path):
+    for path, entries in grouped(log, lambda entry: entry.location.path):
         _annotate_file(path, entries)
 
 
 def _annotate_file(path, entries):
     insertions = []
     
-    for location, func_entries in _grouped(entries, lambda entry: entry.location):
+    for location, func_entries in grouped(entries, lambda entry: entry.location):
         insertions += _annotate_function(path, list(func_entries))
     
     _insert_strings(path, insertions)
@@ -82,8 +82,4 @@ def _insert_strings(path, insertions):
 
 def _str_insert(original, index, to_insert):
     return original[:index] + to_insert + original[index:]
-
-
-def _grouped(values, key):
-    return itertools.groupby(sorted(values, key=key), key=key)
 
