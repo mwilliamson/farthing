@@ -36,7 +36,7 @@ print(repeat("hello ", 3))
 print(repeat("hello ", None))
 """
     typed_program = """
-def repeat(x: str, y: Union(None, int)) -> str:
+def repeat(x: str, y: Union[None, int]) -> str:
     if y is None:
         y = 2
     return x * y
