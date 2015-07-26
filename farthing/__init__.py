@@ -10,7 +10,7 @@ from .entries import TraceEntry
 from .locations import create_location
 from .annotate import annotate
 from .ast_util import func_args
-from .types import describe as describe_type
+from .types import describe_type_of
 
 
 __all__ = ["run"]
@@ -73,12 +73,12 @@ class _FunctionTracer(object):
         self._entry = entry
 
     def trace_return(self, returns):
-        self._entry.returns = describe_type(type(returns))
+        self._entry.returns = describe_type_of(returns)
         return returns
     
     def trace_raise(self):
         raises = sys.exc_info()[1]
-        self._entry.raises = describe_type(type(raises))
+        self._entry.raises = describe_type_of(raises)
     
 
 def _trace_entry(location, func, frame):
@@ -91,7 +91,7 @@ def _trace_entry(location, func, frame):
 
 def _read_arg_type(frame, arg_node):
     actual_arg = frame.f_locals[arg_node.arg]
-    return arg_node.arg, describe_type(type(actual_arg))
+    return arg_node.arg, describe_type_of(actual_arg)
 
 
 _trace_func_name = str(uuid.uuid4())
