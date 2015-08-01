@@ -41,4 +41,12 @@ def _same_public_attributes(first, second):
     return _public_attributes(first) == _public_attributes(second)
 
 def _public_attributes(type_):
-    return tuple(filter(lambda name: not name.startswith("_"), dir(type_)))
+    return tuple(filter(_is_public, dir(type_)))
+
+def _is_public(name):
+    if name.startswith("__") and name.endswith("__"):
+        return True
+    elif name.startswith("_"):
+        return False
+    else:
+        return True
