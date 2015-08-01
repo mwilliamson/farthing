@@ -17,8 +17,15 @@ __all__ = ["run"]
 
 
 def run_and_annotate(trace_path, argv):
-    trace_log = trace(trace_path, argv)
+    process = multiprocessing.Process(target=_run_and_annotate_subprocess, args=(trace_path, argv))
+    process.start()
+    process.join()
+
+
+def _run_and_annotate_subprocess(trace_path, argv):
+    trace_log = _generate_trace(trace_path, argv)
     annotate(trace_log)
+    
 
 def trace(trace_path, argv):
     parent_connection, child_connection = multiprocessing.Pipe(False)

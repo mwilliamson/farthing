@@ -1,4 +1,6 @@
 import ast
+import copy
+
 
 class FunctionTraceTransformer(object):
     def __init__(self, trace_func_name):
@@ -19,7 +21,7 @@ class FunctionTraceNodeTransformer(ast.NodeTransformer):
     
     def visit_FunctionDef(self, node):
         func_index = len(self._funcs)
-        self._funcs.append((self._source_path, node))
+        self._funcs.append((self._source_path, copy.deepcopy(node)))
         self._func_stack.append(func_index)
         try:
             node = self.generic_visit(node)

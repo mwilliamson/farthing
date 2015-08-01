@@ -5,6 +5,7 @@ from hamcrest import assert_that
 import hamcrest as m
 
 import farthing
+from farthing.types import describe
 from .util import program_with_module
 
 
@@ -51,8 +52,8 @@ print(repeat("hello ", 3))
                 "col_offset": 0
             }),
             "args": m.has_entries({
-                "x": ("builtins", "str"),
-                "y": ("builtins", "int"),
+                "x": describe(str),
+                "y": describe(int),
             })
         })))
 
@@ -73,8 +74,8 @@ print(repeat("hello ", y=3))
                 "col_offset": 0
             }),
             "args": m.has_entries({
-                "x": ("builtins", "str"),
-                "y": ("builtins", "int"),
+                "x": describe(str),
+                "y": describe(int),
             })
         })))
 
@@ -94,7 +95,7 @@ print(do_nothing())
                 "lineno": 2,
                 "col_offset": 0
             }),
-            "returns": ("builtins", "NoneType")
+            "returns": describe(type(None))
         })))
 
 @istest
@@ -112,7 +113,7 @@ print(do_nothing())
                 "lineno": 2,
                 "col_offset": 0
             }),
-            "returns": ("builtins", "NoneType")
+            "returns": describe(type(None))
         })))
 
 
@@ -131,7 +132,7 @@ print(answer())
                 "lineno": 2,
                 "col_offset": 0
             }),
-            "returns": ("builtins", "int")
+            "returns": describe(int)
         })))
 
 
@@ -153,14 +154,14 @@ print(answer())
                     "lineno": 2,
                     "col_offset": 0
                 }),
-                "returns": ("builtins", "float")
+                "returns": describe(float)
             }),
             m.has_properties({
                 "location": m.has_properties({
                     "lineno": 3,
                     "col_offset": 4
                 }),
-                "returns": ("builtins", "int")
+                "returns": describe(int)
             }),
         ))
 
@@ -181,5 +182,5 @@ print(do_nothing())
                 "col_offset": 0
             }),
             "returns": None,
-            "raises": ("builtins", "AssertionError")
+            "raises": describe(AssertionError)
         })))

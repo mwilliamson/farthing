@@ -1,3 +1,5 @@
+import abc
+
 from nose.tools import istest, assert_equal
 
 from farthing.supertype import common_super_type
@@ -60,4 +62,27 @@ def common_super_type_of_dict_of_any_to_any_and_other_dict_is_other_dict():
     assert_equal(
         Dict(describe(int), describe(str)),
         common_super_type([Dict(any_, any_), Dict(describe(int), describe(str))])
+    )
+
+
+@istest
+def abstract_base_class_is_selected_as_type_if_all_types_are_instances_of_base_class():
+    class Base(object):
+        __metaclass__ = abc.ABCMeta
+        
+        @abc.abstractmethod
+        def f(self):
+            pass
+    
+    class A(Base):
+        def f(self):
+            pass
+    
+    class B(Base):
+        def f(self):
+            pass
+    
+    assert_equal(
+        describe(Base),
+        common_super_type([describe(A), describe(B)])
     )

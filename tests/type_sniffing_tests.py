@@ -6,7 +6,7 @@ from farthing.type_sniffing import describe_type_of
 
 @istest
 def type_of_int_is_class_of_int():
-    assert_equal(types.Class("builtins", "int"), describe_type_of(42))
+    assert_equal(types.Class("builtins", "int", int), describe_type_of(42))
 
 
 @istest

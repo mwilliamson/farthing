@@ -2,7 +2,7 @@ import collections
 
 
 def describe(type_):
-    return Class(type_.__module__, type_.__name__)
+    return Class(type_.__module__, type_.__name__, type_)
 
 
 def union(values):
@@ -13,7 +13,7 @@ def union(values):
         return Union(values)
 
 
-Class = collections.namedtuple("Class", ["module", "name"])
+Class = collections.namedtuple("Class", ["module", "name", "type"])
 Union = collections.namedtuple("Union", ["values"])
 Any = collections.namedtuple("Any", [])
 any_ = Any()
