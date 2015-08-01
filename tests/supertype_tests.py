@@ -24,10 +24,26 @@ def common_super_type_of_types_with_none_is_union_with_none():
 
 
 @istest
+def common_super_type_of_list_of_different_element_types_is_union_of_list_types():
+    assert_equal(
+        union([List(describe(int)), List(describe(str))]),
+        common_super_type([List(describe(int)), List(describe(str))])
+    )
+
+
+@istest
 def common_super_type_of_list_of_any_and_list_of_other_type_is_list_of_other_type():
     assert_equal(
         List(describe(int)),
         common_super_type([List(any_), List(describe(int))])
+    )
+
+
+@istest
+def common_super_type_of_dict_of_different_element_types_is_union_of_dict_types():
+    assert_equal(
+        union([Dict(describe(int), describe(str)), Dict(describe(str), describe(int))]),
+        common_super_type([Dict(describe(int), describe(str)), Dict(describe(str), describe(int))])
     )
 
 

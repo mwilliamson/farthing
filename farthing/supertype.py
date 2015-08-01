@@ -6,11 +6,11 @@ def common_super_type(types):
     if len(types) == 1:
         return next(iter(types))
     elif all(map(is_list, types)):
-        types.remove(List(any_))
+        types.discard(List(any_))
         if len(types) == 1:
             return next(iter(types))
     elif all(map(is_dict, types)):
-        types.remove(Dict(any_, any_))
+        types.discard(Dict(any_, any_))
         if len(types) == 1:
             return next(iter(types))
 
