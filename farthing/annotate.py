@@ -26,7 +26,8 @@ def _annotate_function(path, entries):
     insertions = []
     
     func = entries[0].func
-    for arg in filter(lambda arg: arg.annotation is None, func_args(func)):
+    # TODO: Use a more reliable mechanism for detecting self args
+    for arg in filter(lambda arg: arg.annotation is None and arg.arg != "self", func_args(func)):
         type_ = common_super_type(entry.args[arg.arg] for entry in entries)
         location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
         insertions.append(_arg_annotation_insertion(location, type_))
