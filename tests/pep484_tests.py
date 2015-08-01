@@ -28,3 +28,8 @@ def any_uses_any_value():
 @istest
 def list_uses_list_class_from_pep_484():
     assert_equal("List[int]", format_type(types.List(types.describe(int))))
+
+
+@istest
+def dict_uses_dict_class_from_pep_484():
+    assert_equal("Dict[int, str]", format_type(types.Dict(types.describe(int), types.describe(str))))

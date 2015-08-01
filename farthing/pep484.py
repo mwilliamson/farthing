@@ -10,5 +10,7 @@ def format_type(type_):
         return "Any"
     elif isinstance(type_, types.List):
         return "List[{0}]".format(format_type(type_.element))
+    elif isinstance(type_, types.Dict):
+        return "Dict[{0}, {1}]".format(format_type(type_.key), format_type(type_.value))
     else:
         return type_.name
