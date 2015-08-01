@@ -86,3 +86,55 @@ def abstract_base_class_is_selected_as_type_if_all_types_are_instances_of_base_c
         describe(Base),
         common_super_type([describe(A), describe(B)])
     )
+
+
+@istest
+def abstract_base_class_is_not_selected_as_type_if_sub_type_defines_additional_method():
+    class Base(object):
+        __metaclass__ = abc.ABCMeta
+        
+        @abc.abstractmethod
+        def f(self):
+            pass
+    
+    class A(Base):
+        def f(self):
+            pass
+    
+    class B(Base):
+        def f(self):
+            pass
+        
+        def g(self):
+            pass
+    
+    assert_equal(
+        union([describe(A), describe(B)]),
+        common_super_type([describe(A), describe(B)])
+    )
+
+
+@istest
+def abstract_base_class_is_selected_as_type_if_sub_type_only_defines_additional_private_method():
+    class Base(object):
+        __metaclass__ = abc.ABCMeta
+        
+        @abc.abstractmethod
+        def f(self):
+            pass
+    
+    class A(Base):
+        def f(self):
+            pass
+    
+    class B(Base):
+        def f(self):
+            pass
+        
+        def _g(self):
+            pass
+    
+    assert_equal(
+        describe(Base),
+        common_super_type([describe(A), describe(B)])
+    )

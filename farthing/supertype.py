@@ -32,4 +32,13 @@ def _discard_empty_collection_types(is_collection, empty_collection_type, types)
         types.discard(empty_collection_type)
 
 def _is_complete_base(types, base):
-    return all(issubclass(type_, base) for type_ in types)
+    return all(
+        issubclass(type_, base) and _same_public_attributes(type_, base)
+        for type_ in types
+    )
+
+def _same_public_attributes(first, second):
+    return _public_attributes(first) == _public_attributes(second)
+
+def _public_attributes(type_):
+    return tuple(filter(lambda name: not name.startswith("_"), dir(type_)))
