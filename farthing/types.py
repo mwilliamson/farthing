@@ -15,3 +15,7 @@ Any = collections.namedtuple("Any", [])
 any_ = Any()
 list_ = List = collections.namedtuple("List", ["element"])
 dict_ = Dict = collections.namedtuple("Dict", ["key", "value"])
+
+
+def is_list(type_):
+    return isinstance(type_, List)
