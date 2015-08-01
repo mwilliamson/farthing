@@ -19,3 +19,7 @@ dict_ = Dict = collections.namedtuple("Dict", ["key", "value"])
 
 def is_list(type_):
     return isinstance(type_, List)
+
+
+def is_dict(type_):
+    return isinstance(type_, Dict)
