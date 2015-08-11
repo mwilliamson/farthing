@@ -15,6 +15,9 @@ def common_super_type(types):
     complete_base = _find_complete_base(types)
     if complete_base is not None:
         return complete_base
+    
+    if all(map(is_list, types)):
+        return List(union(list_type.element for list_type in types))
 
     return union(types)
 

@@ -26,14 +26,6 @@ def common_super_type_of_types_with_none_is_union_with_none():
 
 
 @istest
-def common_super_type_of_list_of_different_element_types_is_union_of_list_types():
-    assert_equal(
-        union([List(describe(int)), List(describe(str))]),
-        common_super_type([List(describe(int)), List(describe(str))])
-    )
-
-
-@istest
 def common_super_type_of_list_of_any_and_list_of_other_type_is_list_of_other_type():
     assert_equal(
         List(describe(int)),
@@ -46,6 +38,14 @@ def list_of_concrete_type_squashes_list_of_any_type_in_presence_of_other_types()
     assert_equal(
         union([List(describe(int)), describe(type(None))]),
         common_super_type([List(any_), List(describe(int)), describe(type(None))])
+    )
+
+
+@istest
+def lists_of_different_types_have_super_type_of_list_of_super_type_of_elements():
+    assert_equal(
+        union([List(union([describe(str), describe(int)]))]),
+        common_super_type([List(describe(str)), List(describe(int))])
     )
 
 
