@@ -11,7 +11,19 @@ def common_super_type(types):
     
     _discard_empty_collection_types(is_list, List(any_), types)
     _discard_empty_collection_types(is_dict, Dict(any_, any_), types)
+    
+    complete_base = _find_complete_base(types)
+    if complete_base is not None:
+        return complete_base
 
+    return union(types)
+
+
+def _discard_empty_collection_types(is_collection, empty_collection_type, types):
+    if sum(map(is_collection, types)) > 1:
+        types.discard(empty_collection_type)
+
+def _find_complete_base(types):
     if all(isinstance(type_, Class) for type_ in types):
         bases = set(
             base
@@ -23,13 +35,7 @@ def common_super_type(types):
         complete_bases = list(filter(lambda base: _is_complete_base(concrete_types, base), bases))
         if complete_bases:
             return describe(complete_bases[0])
-
-    return union(types)
-
-
-def _discard_empty_collection_types(is_collection, empty_collection_type, types):
-    if sum(map(is_collection, types)) > 1:
-        types.discard(empty_collection_type)
+    
 
 def _is_complete_base(types, base):
     return all(
