@@ -26,6 +26,14 @@ def common_super_type_of_types_with_none_is_union_with_none():
 
 
 @istest
+def common_super_type_of_list_of_any_is_list_of_any():
+    assert_equal(
+        List(any_),
+        common_super_type([List(any_)])
+    )
+
+
+@istest
 def common_super_type_of_list_of_any_and_list_of_other_type_is_list_of_other_type():
     assert_equal(
         List(describe(int)),

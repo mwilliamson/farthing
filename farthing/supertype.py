@@ -9,6 +9,9 @@ def common_super_type(types):
     if not types:
         return None
     
+    if len(types) == 1:
+        return union(types)
+    
     _discard_empty_collection_types(is_list, List(any_), types)
     _discard_empty_collection_types(is_dict, Dict(any_, any_), types)
     
