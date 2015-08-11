@@ -6,11 +6,18 @@ def describe(type_):
 
 
 def union(values):
-    values = frozenset(values)
-    if len(values) == 1:
-        return next(iter(values))
+    union_values = set()
+    
+    for value in values:
+        if isinstance(value, Union):
+            union_values |= value.values
+        else:
+            union_values.add(value)
+    
+    if len(union_values) == 1:
+        return next(iter(union_values))
     else:
-        return Union(values)
+        return Union(frozenset(union_values))
 
 
 Class = collections.namedtuple("Class", ["module", "name", "type"])
