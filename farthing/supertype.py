@@ -17,7 +17,7 @@ def common_super_type(types):
         return complete_base
     
     if all(map(is_list, types)):
-        return List(union(list_type.element for list_type in types))
+        return List(common_super_type(list_type.element for list_type in types))
 
     return union(types)
 
