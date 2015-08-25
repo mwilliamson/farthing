@@ -17,9 +17,8 @@ __all__ = ["run"]
 
 
 def run_and_annotate(trace_path, argv):
-    process = multiprocessing.Process(target=_run_and_annotate_subprocess, args=(trace_path, argv))
-    process.start()
-    process.join()
+    pool = multiprocessing.Pool(processes=1)
+    return pool.apply(_run_and_annotate_subprocess, args=(trace_path, argv))
 
 
 def _run_and_annotate_subprocess(trace_path, argv):
