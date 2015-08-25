@@ -27,6 +27,7 @@ any_ = Any()
 list_ = List = collections.namedtuple("List", ["element"])
 dict_ = Dict = collections.namedtuple("Dict", ["key", "value"])
 callable_ref = CallableRef = collections.namedtuple("CallableRef", ["func_index"])
+callable_ = Callable = collections.namedtuple("Callable", ["args", "returns"])
 
 def is_list(type_):
     return isinstance(type_, List)

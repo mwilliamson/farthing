@@ -5,38 +5,58 @@ from .locations import FileLocation
 from .supertype import common_super_type
 from .iterables import grouped
 from .pep484 import format_type
+from . import types
 
 
 def annotate(log):
-    for path, entries in grouped(log, lambda entry: entry.location.path):
-        _annotate_file(path, entries)
+    annotator = _Annotator(log)
+    annotator.annotate()
 
 
-def _annotate_file(path, entries):
-    insertions = []
-    
-    for location, func_entries in grouped(entries, lambda entry: entry.location):
-        insertions += _annotate_function(path, list(func_entries))
-    
-    _insert_strings(path, insertions)
+class _Annotator(object):
+    def __init__(self, all_entries):
+        self._all_entries = all_entries
+        
+    def annotate(self):
+        for path, entries in grouped(self._all_entries, lambda entry: entry.location.path):
+            self._annotate_file(path, entries)
 
 
-def _annotate_function(path, entries):
-    # TODO: investigate libraries that will allow editing of nodes while preserving concrete syntax
-    insertions = []
+    def _annotate_file(self, path, entries):
+        insertions = []
+        
+        for location, func_entries in grouped(entries, lambda entry: entry.location):
+            insertions += self._annotate_function(path, list(func_entries))
+        
+        _insert_strings(path, insertions)
+
+
+    def _annotate_function(self, path, entries):
+        # TODO: investigate libraries that will allow editing of nodes while preserving concrete syntax
+        insertions = []
+        
+        func = entries[0].func
+        type_ = self._function_type(func, entries)
+        for arg, arg_type in type_.args:
+            if arg.annotation is None:
+                location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
+                insertions.append(_arg_annotation_insertion(location, arg_type))
+        
+        return_type_annotation = _return_type_annotation(path, func, type_.returns)
+        if return_type_annotation is not None:
+            insertions.append(return_type_annotation)
+        
+        return insertions
     
-    func = entries[0].func
-    # TODO: Use a more reliable mechanism for detecting self args
-    for arg in filter(lambda arg: arg.annotation is None and arg.arg != "self", func_args(func)):
-        type_ = common_super_type(entry.args[arg.arg] for entry in entries)
-        location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
-        insertions.append(_arg_annotation_insertion(location, type_))
-    
-    return_type_annotation = _return_type_annotation(path, func, common_super_type(entry.returns for entry in entries))
-    if return_type_annotation is not None:
-        insertions.append(return_type_annotation)
-    
-    return insertions
+    def _function_type(self, func, entries):
+        # TODO: Use a more reliable mechanism for detecting self args
+        args = []
+        for arg in filter(lambda arg: arg.arg != "self", func_args(func)):
+            type_ = common_super_type(entry.args[arg.arg] for entry in entries)
+            args.append((arg, type_))
+        
+        returns = common_super_type(entry.returns for entry in entries)
+        return types.callable_(args, returns)
 
 
 def _return_type_annotation(path, func, return_type):
