@@ -30,3 +30,15 @@ def type_of_dict_is_sniffed_from_keys_and_values():
         types.dict_(types.describe(int), types.describe(str)),
         describe_type_of({1: "Kentucky Pill"})
     )
+
+
+@istest
+def type_of_callable_stores_func_index():
+    def f():
+        pass
+    f._farthing_func_index = 42
+    
+    assert_equal(
+        types.callable_ref(42),
+        describe_type_of(f)
+    )

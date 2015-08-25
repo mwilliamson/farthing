@@ -50,6 +50,33 @@ print(repeat("hello ", None))
 
 
 @istest
+def function_arguments_to_higher_order_functions_are_traced():
+    program = """
+def map_ints(func, elements):
+    return list(map(func, elements))
+
+def half_int(value):
+    return value / 2.0
+
+print(map_ints(half_int, [1, 2, 3]))
+"""
+    typed_program = """
+def map_ints(func: Callable, elements: List[int]) -> List[float]:
+    return list(map(func, elements))
+
+def half_int(value: int) -> float:
+    return value / 2.0
+
+print(map_ints(half_int, [1, 2, 3]))
+"""
+    with program_with_module(program) as program:
+        farthing.run_and_annotate(program.directory_path, [program.run_path])
+        assert_equal(typed_program, _read_file(program.module_path))
+
+
+
+
+@istest
 def existing_argument_annotations_are_retained():
     program = """
 def repeat(x: object, y):

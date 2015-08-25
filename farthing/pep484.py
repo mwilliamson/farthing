@@ -12,5 +12,7 @@ def format_type(type_):
         return "List[{0}]".format(format_type(type_.element))
     elif isinstance(type_, types.Dict):
         return "Dict[{0}, {1}]".format(format_type(type_.key), format_type(type_.value))
+    elif isinstance(type_, types.CallableRef):
+        return "Callable"
     else:
         return type_.name

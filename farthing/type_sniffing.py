@@ -8,6 +8,8 @@ def describe_type_of(value):
         return _describe_list(value)
     elif issubclass(type_, dict):
         return _describe_dict(value)
+    elif callable(value) and hasattr(value, "_farthing_func_index"):
+        return types.callable_ref(value._farthing_func_index)
     else:
         return types.describe(type_)
 

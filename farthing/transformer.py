@@ -37,7 +37,11 @@ class FunctionTraceNodeTransformer(ast.NodeTransformer):
                     nodes.Raise(None, None)
                 ])
             ], [], [])]
-            return node
+            func_index_assignment = nodes.Assign(
+                [nodes.Attribute(nodes.Name(node.name, nodes.Load()), "_farthing_func_index", nodes.Store())],
+                nodes.Num(func_index),
+            )
+            return [node, func_index_assignment]
         finally:
             self._func_stack.pop()
     
