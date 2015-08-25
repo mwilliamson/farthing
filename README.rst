@@ -98,3 +98,10 @@ following limitations:
 
 I'd be interested to see any projects along similar lines, so if you know of any,
 I'd be grateful if you let me know.
+
+TODO
+~~~~
+
+* Type various iterables (e.g. the return value from ``map`` or ``dict.keys()``) as iterables.
+
+* Type callables passed to higher-order functions.
