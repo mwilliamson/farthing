@@ -94,8 +94,6 @@ following limitations:
 
 * Type annotations cannot be added to the Python script being run.
 
-* The first type seen is used, rather than any attempt at finding a super-type.
-
 I'd be interested to see any projects along similar lines, so if you know of any,
 I'd be grateful if you let me know.
 
