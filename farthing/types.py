@@ -35,3 +35,7 @@ def is_list(type_):
 
 def is_dict(type_):
     return isinstance(type_, Dict)
+
+
+def is_callable_ref(type_):
+    return isinstance(type_, CallableRef)

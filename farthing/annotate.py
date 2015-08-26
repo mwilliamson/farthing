@@ -16,6 +16,14 @@ def annotate(log):
 class _Annotator(object):
     def __init__(self, all_entries):
         self._all_entries = all_entries
+        entries_grouped_by_function = (
+            list(func_entries)
+            for location, func_entries in grouped(all_entries, lambda entry: entry.location)
+        )
+        self._entries_by_func_index = dict(
+            (func_entries[0].func._farthing_func_index, func_entries)
+            for func_entries in entries_grouped_by_function     
+        )
         
     def annotate(self):
         for path, entries in grouped(self._all_entries, lambda entry: entry.location.path):
@@ -52,11 +60,22 @@ class _Annotator(object):
         # TODO: Use a more reliable mechanism for detecting self args
         args = []
         for arg in filter(lambda arg: arg.arg != "self", func_args(func)):
-            type_ = common_super_type(entry.args[arg.arg] for entry in entries)
+            type_ = self._common_super_type(entry.args[arg.arg] for entry in entries)
             args.append((arg, type_))
         
-        returns = common_super_type(entry.returns for entry in entries)
-        return types.callable_(args, returns)
+        returns = self._common_super_type(entry.returns for entry in entries)
+        return types.callable_(tuple(args), returns)
+    
+    def _common_super_type(self, types):
+        return common_super_type(map(self._resolve_callable_ref, types))
+    
+    def _resolve_callable_ref(self, type_):
+        if types.is_callable_ref(type_):
+            return self._function_type(
+                self._entries_by_func_index[type_.func_index][0].func,
+                self._entries_by_func_index[type_.func_index])
+        else:
+            return type_
 
 
 def _return_type_annotation(path, func, return_type):
