@@ -61,7 +61,7 @@ def half_int(value):
 print(map_ints(half_int, [1, 2, 3]))
 """
     typed_program = """
-def map_ints(func: Callable, elements: List[int]) -> List[float]:
+def map_ints(func: Callable[int, float], elements: List[int]) -> List[float]:
     return list(map(func, elements))
 
 def half_int(value: int) -> float:

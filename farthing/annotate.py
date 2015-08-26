@@ -16,6 +16,14 @@ def annotate(log):
 class _Annotator(object):
     def __init__(self, all_entries):
         self._all_entries = all_entries
+        entries_grouped_by_function = (
+            list(func_entries)
+            for location, func_entries in grouped(all_entries, lambda entry: entry.location)
+        )
+        self._entries_by_func_index = dict(
+            (func_entries[0].func, func_entries)
+            for func_entries in entries_grouped_by_function     
+        )
         
     def annotate(self):
         for path, entries in grouped(self._all_entries, lambda entry: entry.location.path):
