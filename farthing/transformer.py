@@ -21,6 +21,7 @@ class FunctionTraceNodeTransformer(ast.NodeTransformer):
     
     def visit_FunctionDef(self, node):
         func_index = len(self._funcs)
+        node._farthing_func_index = func_index
         self._funcs.append((self._source_path, copy.deepcopy(node)))
         self._func_stack.append(func_index)
         try:

@@ -38,3 +38,11 @@ def dict_uses_dict_class_from_pep_484():
 @istest
 def callable_ref_has_callable_type():
     assert_equal("Callable", format_type(types.callable_ref(42)))
+
+
+@istest
+def callable_has_callable_type():
+    assert_equal(
+        "Callable[[int, str], bool]",
+        format_type(types.callable_([types.describe(int), types.describe(str)], types.describe(bool))),
+    )
