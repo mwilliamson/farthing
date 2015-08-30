@@ -9,8 +9,8 @@ from .guess import guess_types
 
 def annotate(all_entries):
     insertions = []
-    for location, func, type_ in guess_types(all_entries):
-        insertions += _annotate_function(location.path, func, type_)
+    for func, type_ in guess_types(all_entries):
+        insertions += _annotate_function(func.path, func, type_)
     
     for path, insertions_for_file in grouped(insertions, lambda insertion: insertion.location.path):
         _insert_strings(path, insertions_for_file)

@@ -23,9 +23,8 @@ class _Guesser(object):
         
     def guess_types(self):
         for func_index, entries in self._entries_by_func_index.items():
-            location = entries[0].location
             func = entries[0].func
-            yield location, func, self._guess_function_type(func, entries)
+            yield func, self._guess_function_type(func, entries)
 
     def _guess_function_type(self, func, entries):
         args = []
