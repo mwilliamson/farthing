@@ -20,39 +20,42 @@ def union(values):
         return Union(frozenset(union_values))
 
 
+class Type(object):
+    pass
+
 @cobble.data
-class Class(object):
+class Class(Type):
     module = cobble.field()
     name = cobble.field()
     type = cobble.field()
 
 @cobble.data
-class Union(object):
+class Union(Type):
     values = cobble.field()
 
 @cobble.data
-class Any(object):
+class Any(Type):
     pass
 any_ = Any()
 
 @cobble.data
-class List(object):
+class List(Type):
     element = cobble.field()
 list_ = List
 
 @cobble.data
-class Dict(object):
+class Dict(Type):
     key = cobble.field()
     value = cobble.field()
 dict_ = Dict
 
 @cobble.data
-class CallableRef(object):
+class CallableRef(Type):
     func_index = cobble.field()
 callable_ref = CallableRef
 
 @cobble.data
-class Callable(object):
+class Callable(Type):
     args = cobble.field()
     returns = cobble.field()
 callable_ = Callable
