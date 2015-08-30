@@ -1,11 +1,10 @@
 import collections
 
 from .ast_util import func_args, find_return_annotation_location
-from .locations import FileLocation
-from .supertype import common_super_type
+from .locations import create_location, Location
 from .iterables import grouped
 from .pep484 import format_type
-from . import types
+from .guess import guess_types
 
 
 def annotate(log):
@@ -16,38 +15,23 @@ def annotate(log):
 class _Annotator(object):
     def __init__(self, all_entries):
         self._all_entries = all_entries
-        entries_grouped_by_function = (
-            list(func_entries)
-            for location, func_entries in grouped(all_entries, lambda entry: entry.location)
-        )
-        self._entries_by_func_index = dict(
-            (func_entries[0].func._farthing_func_index, func_entries)
-            for func_entries in entries_grouped_by_function     
-        )
         
     def annotate(self):
-        for path, entries in grouped(self._all_entries, lambda entry: entry.location.path):
-            self._annotate_file(path, entries)
-
-
-    def _annotate_file(self, path, entries):
         insertions = []
+        for location, func, type_ in guess_types(self._all_entries):
+            insertions += self._annotate_function(location.path, func, type_)
         
-        for location, func_entries in grouped(entries, lambda entry: entry.location):
-            insertions += self._annotate_function(path, list(func_entries))
-        
-        _insert_strings(path, insertions)
+        for path, insertions_for_file in grouped(insertions, lambda insertion: insertion.location.path):
+            _insert_strings(path, insertions_for_file)
 
 
-    def _annotate_function(self, path, entries):
+    def _annotate_function(self, path, func, type_):
         # TODO: investigate libraries that will allow editing of nodes while preserving concrete syntax
         insertions = []
         
-        func = entries[0].func
-        type_ = self._function_type(func, entries)
         for (arg_name, arg_type), arg in zip(type_.args, func_args(func)):
             if arg.annotation is None:
-                location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
+                location = create_location(path, arg.lineno, arg.col_offset + len(arg.arg))
                 insertions.append(_arg_annotation_insertion(location, arg_type))
         
         return_type_annotation = _return_type_annotation(path, func, type_.returns)
@@ -56,33 +40,13 @@ class _Annotator(object):
         
         return insertions
     
-    def _function_type(self, func, entries):
-        args = []
-        for arg in func_args(func):
-            type_ = self._common_super_type(entry.args[arg.arg] for entry in entries)
-            args.append((arg.arg, type_))
-        
-        returns = self._common_super_type(entry.returns for entry in entries)
-        return types.callable_(tuple(args), returns)
-    
-    def _common_super_type(self, types):
-        return common_super_type(map(self._resolve_callable_ref, types))
-    
-    def _resolve_callable_ref(self, type_):
-        if types.is_callable_ref(type_):
-            return self._function_type(
-                self._entries_by_func_index[type_.func_index][0].func,
-                self._entries_by_func_index[type_.func_index])
-        else:
-            return type_
-
 
 def _return_type_annotation(path, func, return_type):
     if return_type is None or func.returns is not None:
         return None
     
     with open(path) as source_file:
-        location = find_return_annotation_location(source_file, func)
+        location = Location(path, find_return_annotation_location(source_file, func))
     return _return_annotation_insertion(location, return_type)
     
 
