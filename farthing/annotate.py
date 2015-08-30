@@ -45,7 +45,7 @@ class _Annotator(object):
         
         func = entries[0].func
         type_ = self._function_type(func, entries)
-        for arg, arg_type in type_.args:
+        for (arg_name, arg_type), arg in zip(type_.args, func_args(func)):
             if arg.annotation is None:
                 location = FileLocation(arg.lineno, arg.col_offset + len(arg.arg))
                 insertions.append(_arg_annotation_insertion(location, arg_type))
@@ -57,11 +57,10 @@ class _Annotator(object):
         return insertions
     
     def _function_type(self, func, entries):
-        # TODO: Use a more reliable mechanism for detecting self args
         args = []
-        for arg in filter(lambda arg: arg.arg != "self", func_args(func)):
+        for arg in func_args(func):
             type_ = self._common_super_type(entry.args[arg.arg] for entry in entries)
-            args.append((arg, type_))
+            args.append((arg.arg, type_))
         
         returns = self._common_super_type(entry.returns for entry in entries)
         return types.callable_(tuple(args), returns)

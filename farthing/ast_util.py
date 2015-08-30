@@ -4,7 +4,9 @@ from .locations import FileLocation
 
 
 def func_args(func):
-    return func.args.args + func.args.kwonlyargs
+    args = func.args.args + func.args.kwonlyargs
+    # TODO: Use a more reliable mechanism for detecting self args
+    return filter(lambda arg: arg.arg != "self", args)
 
 
 def load_funcs(path):
