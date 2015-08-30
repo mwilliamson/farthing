@@ -1,4 +1,4 @@
-import collections
+import cobble
 
 
 def describe(type_):
@@ -20,14 +20,42 @@ def union(values):
         return Union(frozenset(union_values))
 
 
-Class = collections.namedtuple("Class", ["module", "name", "type"])
-Union = collections.namedtuple("Union", ["values"])
-Any = collections.namedtuple("Any", [])
+@cobble.data
+class Class(object):
+    module = cobble.field()
+    name = cobble.field()
+    type = cobble.field()
+
+@cobble.data
+class Union(object):
+    values = cobble.field()
+
+@cobble.data
+class Any(object):
+    pass
 any_ = Any()
-list_ = List = collections.namedtuple("List", ["element"])
-dict_ = Dict = collections.namedtuple("Dict", ["key", "value"])
-callable_ref = CallableRef = collections.namedtuple("CallableRef", ["func_index"])
-callable_ = Callable = collections.namedtuple("Callable", ["args", "returns"])
+
+@cobble.data
+class List(object):
+    element = cobble.field()
+list_ = List
+
+@cobble.data
+class Dict(object):
+    key = cobble.field()
+    value = cobble.field()
+dict_ = Dict
+
+@cobble.data
+class CallableRef(object):
+    func_index = cobble.field()
+callable_ref = CallableRef
+
+@cobble.data
+class Callable(object):
+    args = cobble.field()
+    returns = cobble.field()
+callable_ = Callable
 
 def is_list(type_):
     return isinstance(type_, List)

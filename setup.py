@@ -17,7 +17,7 @@ setup(
     keywords="type",
     packages=['farthing'],
     scripts=['scripts/farthing'],
-    install_requires=[],
+    install_requires=["cobble>=0.1.1,<0.2"],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
