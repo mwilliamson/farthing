@@ -1,7 +1,7 @@
 import collections
 
 from .ast_util import func_args, find_return_annotation_location
-from .locations import create_location, Location
+from .locations import create_location
 from .iterables import grouped
 from .pep484 import format_type
 from .guess import guess_types
@@ -37,7 +37,7 @@ def _return_type_annotation(path, func, return_type):
         return None
     
     with open(path) as source_file:
-        location = Location(path, find_return_annotation_location(source_file, func))
+        location = find_return_annotation_location(source_file, func)
     return _return_annotation_insertion(location, return_type)
     
 

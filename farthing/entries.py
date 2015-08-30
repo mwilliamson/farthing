@@ -25,7 +25,7 @@ class TraceEntry(object):
         for path, values_in_file in values_by_file:
             funcs = load_funcs(path)
             for location, args, returns, raises in values_in_file:
-                func = funcs[location.in_file]
+                func = funcs[location]
                 entry = TraceEntry(location, func, args)
                 entry.returns = returns
                 entry.raises = raises

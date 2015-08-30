@@ -1,8 +1,9 @@
 import os
-import ast
 from importlib.abc import MetaPathFinder, FileLoader
 from importlib.machinery import PathFinder
 from importlib.util import decode_source, spec_from_loader
+
+from . import parser
 
 
 class Finder(MetaPathFinder):
@@ -32,5 +33,5 @@ class Loader(FileLoader):
             return decode_source(source_file.read())
     
     def source_to_code(self, data, path):
-        node = self._transformer.transform(path, ast.parse(data, path))
+        node = self._transformer.transform(path, parser.parse(data, path))
         return compile(node, path, 'exec')

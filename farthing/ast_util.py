@@ -1,6 +1,7 @@
 import ast
 
-from .locations import FileLocation
+from . import parser
+from .locations import Location
 
 
 def func_args(func):
@@ -13,13 +14,13 @@ def load_funcs(path):
     with open(path) as source_file:
         return dict(
             (_node_location(node), node)
-            for node in ast.walk(ast.parse(source_file.read()))
+            for node in ast.walk(parser.parse(source_file.read(), path))
             if isinstance(node, ast.FunctionDef)
         )
 
 
 def _node_location(node):
-    return FileLocation(getattr(node, "lineno", None), getattr(node, "col_offset", None))
+    return Location(getattr(node, "path", None), getattr(node, "lineno", None), getattr(node, "col_offset", None))
 
 
 def find_return_annotation_location(fileobj, func):
@@ -30,7 +31,7 @@ def find_return_annotation_location(fileobj, func):
     while reader.peek_previous() != ")":
         reader.move_previous()
     
-    return reader.location()
+    return reader.location(func.path)
 
 
 class _SourceReader(object):
@@ -53,5 +54,5 @@ class _SourceReader(object):
     def _line(self):
         return self._lines[self._lineno - 1]
     
-    def location(self):
-        return FileLocation(self._lineno, self._col_offset)
+    def location(self, path):
+        return Location(path, self._lineno, self._col_offset)
