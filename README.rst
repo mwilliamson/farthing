@@ -101,5 +101,3 @@ TODO
 ~~~~
 
 * Type various iterables (e.g. the return value from ``map`` or ``dict.keys()``) as iterables.
-
-* Type callables passed to higher-order functions.
