@@ -1,7 +1,7 @@
 import abc
 import inspect
 
-from .types import union, is_list, List, is_dict, Dict, any_, Class, describe
+from .types import union, is_list, List, is_dict, Dict, any_, is_class, describe
 
 
 def common_super_type(types):
@@ -30,7 +30,7 @@ def _discard_empty_collection_types(is_collection, empty_collection_type, types)
         types.discard(empty_collection_type)
 
 def _find_complete_base(types):
-    if all(isinstance(type_, Class) for type_ in types):
+    if all(map(is_class, types)):
         bases = set(
             base
             for type_ in types

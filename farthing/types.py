@@ -60,6 +60,9 @@ class Callable(Type):
     returns = cobble.field()
 callable_ = Callable
 
+def is_class(type_):
+    return isinstance(type_, Class)
+
 def is_list(type_):
     return isinstance(type_, List)
 
