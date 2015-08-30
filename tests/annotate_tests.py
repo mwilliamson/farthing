@@ -74,8 +74,6 @@ print(map_ints(half_int, [1, 2, 3]))
         assert_equal(typed_program, _read_file(program.module_path))
 
 
-
-
 @istest
 def existing_argument_annotations_are_retained():
     program = """
@@ -173,6 +171,29 @@ class Repeater(object):
         return x * y
 
 print(Repeater().repeat("hello ", 3))
+"""
+    with program_with_module(program) as program:
+        farthing.run_and_annotate(program.directory_path, [program.run_path])
+        assert_equal(typed_program, _read_file(program.module_path))
+
+
+@istest
+def properties_are_typed():
+    program = """
+class Box(object):
+    @property
+    def value(self):
+        return 42
+
+print(Box().value)
+"""
+    typed_program = """
+class Box(object):
+    @property
+    def value(self) -> int:
+        return 42
+
+print(Box().value)
 """
     with program_with_module(program) as program:
         farthing.run_and_annotate(program.directory_path, [program.run_path])

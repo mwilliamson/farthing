@@ -27,9 +27,11 @@ def prioritise_module_finder(finder):
 
 
 @contextlib.contextmanager
-def add_builtin(key, value):
-    setattr(builtins, key, value)
+def add_builtins(extra_builtins):
+    for key, value in extra_builtins.items():
+        setattr(builtins, key, value)
     try:
         yield
     finally:
-        delattr(builtins, key)
+        for key in extra_builtins:
+            delattr(builtins, key)

@@ -64,7 +64,18 @@ def _generate_trace(trace_path, argv):
                 trace.append(entry)
                 return _FunctionTracer(entry)
             
-            with runtime.add_builtin(_trace_func_name, trace_func):
+            def _farthing_assign_func_index(func_index):
+                def assign(func):
+                    func._farthing_func_index = func_index
+                    return func
+                    
+                return assign
+                
+            extra_builtins = {
+                _trace_func_name: trace_func,
+                "_farthing_assign_func_index": _farthing_assign_func_index,
+            }
+            with runtime.add_builtins(extra_builtins):
                 try:
                     runpy.run_path(argv[0], run_name="__main__")
                 except:
