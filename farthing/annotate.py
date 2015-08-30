@@ -7,38 +7,29 @@ from .pep484 import format_type
 from .guess import guess_types
 
 
-def annotate(log):
-    annotator = _Annotator(log)
-    annotator.annotate()
+def annotate(all_entries):
+    insertions = []
+    for location, func, type_ in guess_types(all_entries):
+        insertions += _annotate_function(location.path, func, type_)
+    
+    for path, insertions_for_file in grouped(insertions, lambda insertion: insertion.location.path):
+        _insert_strings(path, insertions_for_file)
 
 
-class _Annotator(object):
-    def __init__(self, all_entries):
-        self._all_entries = all_entries
-        
-    def annotate(self):
-        insertions = []
-        for location, func, type_ in guess_types(self._all_entries):
-            insertions += self._annotate_function(location.path, func, type_)
-        
-        for path, insertions_for_file in grouped(insertions, lambda insertion: insertion.location.path):
-            _insert_strings(path, insertions_for_file)
-
-
-    def _annotate_function(self, path, func, type_):
-        # TODO: investigate libraries that will allow editing of nodes while preserving concrete syntax
-        insertions = []
-        
-        for (arg_name, arg_type), arg in zip(type_.args, func_args(func)):
-            if arg.annotation is None:
-                location = create_location(path, arg.lineno, arg.col_offset + len(arg.arg))
-                insertions.append(_arg_annotation_insertion(location, arg_type))
-        
-        return_type_annotation = _return_type_annotation(path, func, type_.returns)
-        if return_type_annotation is not None:
-            insertions.append(return_type_annotation)
-        
-        return insertions
+def _annotate_function(path, func, type_):
+    # TODO: investigate libraries that will allow editing of nodes while preserving concrete syntax
+    insertions = []
+    
+    for (arg_name, arg_type), arg in zip(type_.args, func_args(func)):
+        if arg.annotation is None:
+            location = create_location(path, arg.lineno, arg.col_offset + len(arg.arg))
+            insertions.append(_arg_annotation_insertion(location, arg_type))
+    
+    return_type_annotation = _return_type_annotation(path, func, type_.returns)
+    if return_type_annotation is not None:
+        insertions.append(return_type_annotation)
+    
+    return insertions
     
 
 def _return_type_annotation(path, func, return_type):
