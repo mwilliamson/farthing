@@ -75,6 +75,25 @@ print(map_ints(half_int, [1, 2, 3]))
 
 
 @istest
+def no_infinite_loop_if_function_is_passed_to_itself():
+    program = """
+def strange(func):
+    return 42
+
+print(strange(strange))
+"""
+    typed_program = """
+def strange(func: Callable[[Callable], int]) -> int:
+    return 42
+
+print(strange(strange))
+"""
+    with program_with_module(program) as program:
+        farthing.run_and_annotate(program.directory_path, [program.run_path])
+        assert_equal(typed_program, _read_file(program.module_path))
+
+
+@istest
 def existing_argument_annotations_are_retained():
     program = """
 def repeat(x: object, y):
