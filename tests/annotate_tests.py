@@ -23,6 +23,25 @@ print(repeat("hello ", 3))
     assert_equal(typed_program, _annotate_source(program))
 
 
+@istest
+def can_pass_trace_paths_for_files_instead_of_directories():
+    source = """
+def repeat(x, y):
+    return x * y
+
+print(repeat("hello ", 3))
+"""
+    typed_program = """
+def repeat(x: str, y: int) -> str:
+    return x * y
+
+print(repeat("hello ", 3))
+"""
+    with program_with_module(source) as program:
+        farthing.run_and_annotate(trace_paths=[program.module_path], argv=[program.run_path])
+        assert_equal(typed_program, _read_file(program.module_path))
+
+
 # TODO: split actual annotation from generation of types to remove duplication in tests
 @istest
 def types_can_be_union():
