@@ -3,22 +3,30 @@ import os
 
 import tempman
 
+
+_run_path = "run.py"
+_main_path = "main.py"
+
 @contextlib.contextmanager
 def program_with_module(module):
+    files = {_run_path: "import main", _main_path: module}
+    with _create_temp_dir(files) as directory:
+        yield _Program(directory.path)
+
+
+@contextlib.contextmanager
+def _create_temp_dir(files):
     with tempman.create_temp_dir() as directory:
-        program = _Program(directory.path)
+        for path, contents in files.items():
+            with open(os.path.join(directory.path, path), "w") as fileobj:
+                fileobj.write(contents)
         
-        with open(program.run_path, "w") as run_file:
-            run_file.write("import main")
-        with open(program.module_path, "w") as module_file:
-            module_file.write(module)
-        
-        yield program
+        yield directory
 
 
 
 class _Program(object):
     def __init__(self, directory):
         self.directory_path = directory
-        self.run_path = os.path.join(directory, "run.py")
-        self.module_path = os.path.join(directory, "main.py")
+        self.run_path = os.path.join(directory, _run_path)
+        self.module_path = os.path.join(directory, _main_path)
