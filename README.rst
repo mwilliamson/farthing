@@ -103,5 +103,3 @@ TODO
 * Type various iterables (e.g. the return value from ``map`` or ``dict.keys()``) as iterables.
 
 * Check typing of methods.
-
-* Avoid infinite loops if type of callable depends on itself.
