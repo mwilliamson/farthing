@@ -94,8 +94,6 @@ print(map_ints(half_int, [1, 2, 3]))
 
 @istest
 def can_trace_files_without_annotating_them():
-    # TODO: WIP
-    return
     # We trace increment so that we know its type as its passed into twice
     twice = """
 def twice(func, value):

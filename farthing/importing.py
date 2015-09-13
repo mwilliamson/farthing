@@ -4,6 +4,7 @@ from importlib.machinery import PathFinder
 from importlib.util import decode_source, spec_from_loader
 
 from . import parser
+from .paths import is_in_any_directory
 
 
 class Finder(MetaPathFinder):
@@ -20,10 +21,7 @@ class Finder(MetaPathFinder):
             return spec_from_loader(fullname, loader, origin=module_spec.origin, is_package=is_package)
     
     def _is_in_directory(self, path):
-        return any(
-            os.path.commonprefix([directory_path, os.path.abspath(path)]) == directory_path
-            for directory_path in self._directory_paths
-        )
+        return is_in_any_directory(self._directory_paths, path)
     
 
 class Loader(FileLoader):

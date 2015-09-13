@@ -23,7 +23,7 @@ def run_and_annotate(**kwargs):
 
 def _run_and_annotate_subprocess(*, argv, annotate_paths, trace_paths):
     trace_log = _generate_trace(argv, annotate_paths + trace_paths)
-    annotate(trace_log)
+    annotate(trace_log, annotate_paths)
     
 
 def trace(*, argv, trace_paths):

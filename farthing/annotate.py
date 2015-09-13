@@ -5,12 +5,14 @@ from .locations import create_location
 from .iterables import grouped
 from .pep484 import format_type
 from .guess import guess_types
+from .paths import is_in_any_directory
 
 
-def annotate(all_entries):
+def annotate(all_entries, annotate_paths):
     insertions = []
     for func, type_ in guess_types(all_entries):
-        insertions += _annotate_function(func.path, func, type_)
+        if is_in_any_directory(annotate_paths, func.path):
+            insertions += _annotate_function(func.path, func, type_)
     
     for path, insertions_for_file in grouped(insertions, lambda insertion: insertion.location.path):
         _insert_strings(path, insertions_for_file)
