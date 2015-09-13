@@ -10,12 +10,12 @@ _main_path = "main.py"
 @contextlib.contextmanager
 def program_with_module(module):
     files = {_run_path: "import main", _main_path: module}
-    with _create_temp_dir(files) as directory:
+    with create_temp_dir(files) as directory:
         yield _Program(directory.path)
 
 
 @contextlib.contextmanager
-def _create_temp_dir(files):
+def create_temp_dir(files):
     with tempman.create_temp_dir() as directory:
         for path, contents in files.items():
             with open(os.path.join(directory.path, path), "w") as fileobj:

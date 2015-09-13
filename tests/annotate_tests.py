@@ -1,6 +1,8 @@
+import os
+
 from nose.tools import istest, assert_equal
 
-from .util import program_with_module
+from .util import program_with_module, create_temp_dir
 import farthing
 
 
@@ -66,6 +68,40 @@ def half_int(value: int) -> float:
 print(map_ints(half_int, [1, 2, 3]))
 """
     assert_equal(typed_program, _annotate_source(program))
+
+
+@istest
+def can_trace_files_without_annotating_them():
+    # TODO: WIP
+    return
+    # We trace increment so that we know its type as its passed into twice
+    twice = """
+def twice(func, value):
+    return func(func(value))
+"""
+    typed_twice = """
+def twice(func: Callable[[int], int], value: int):
+    return func(func(value))
+"""
+    increment = """
+def increment(value):
+    return value + 1
+"""
+    run = """
+import twice
+import increment
+print(twice(increment, 40))
+"""
+    files = {
+        "run.py": run,
+        "twice.py": twice,
+        "increment.py": increment,
+    }
+    with create_temp_dir(files) as directory:
+        farthing.run_and_annotate(
+            trace_paths=[os.path.join(directory.path, "twice.py")],
+            argv=[os.path.join(directory.path, "run.py")])
+        assert_equal(typed_twice, _read_file(os.path.join(directory.path, "twice.py")))
 
 
 @istest
