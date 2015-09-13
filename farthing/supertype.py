@@ -19,6 +19,11 @@ def common_super_type(types):
     if complete_base is not None:
         return complete_base
     
+    if len(types) > 3:
+        base = _find_common_base_class(types)
+        if base is not None:
+            return describe(base)
+    
     if all(map(is_list, types)):
         return List(common_super_type(list_type.element for list_type in types))
 
@@ -41,6 +46,26 @@ def _find_complete_base(types):
         complete_bases = list(filter(lambda base: _is_complete_base(concrete_types, base), bases))
         if complete_bases:
             return describe(complete_bases[0])
+
+
+def _find_common_base_class(types):
+    if all(map(is_class, types)):
+        concrete_types = [type_.type for type_ in types]
+        bases_for_each_type = [
+            inspect.getmro(type_)
+            for type_ in concrete_types
+        ]
+        common_bases = set(bases_for_each_type[0]).intersection(*bases_for_each_type[1:])
+        # Use MRO to get the most specific common base
+        ordered_common_bases = [
+            base
+            for bases in bases_for_each_type
+            for base in bases
+            if base in common_bases
+        ]
+        if ordered_common_bases:
+            return next(iter(ordered_common_bases))
+    return object
     
 
 def _is_complete_base(types, base):

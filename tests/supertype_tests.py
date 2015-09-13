@@ -123,6 +123,40 @@ def abstract_base_class_is_not_selected_as_type_if_sub_type_defines_additional_m
 
 
 @istest
+def common_superclass_is_preferred_over_union_of_four_or_more_types_even_when_additional_methods_are_defined():
+    class Base(object):
+        __metaclass__ = abc.ABCMeta
+        
+        @abc.abstractmethod
+        def f(self):
+            pass
+    
+    class A(Base):
+        def f(self):
+            pass
+    
+    class B(Base):
+        def f(self):
+            pass
+        
+        def g(self):
+            pass
+    
+    class C(Base):
+        def f(self):
+            pass
+    
+    class D(Base):
+        def f(self):
+            pass
+    
+    assert_equal(
+        union([describe(Base)]),
+        common_super_type([describe(A), describe(B), describe(C), describe(D)])
+    )
+
+
+@istest
 def abstract_base_class_is_not_selected_as_type_if_sub_type_defines_additional_magic_method():
     class Base(object):
         __metaclass__ = abc.ABCMeta
