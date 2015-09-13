@@ -8,6 +8,8 @@ def describe_type_of(value):
         return _describe_list(value)
     elif issubclass(type_, dict):
         return _describe_dict(value)
+    elif issubclass(type_, tuple):
+        return _describe_tuple(value)
     elif callable(value) and hasattr(value, "_farthing_func_index"):
         return types.callable_ref(value._farthing_func_index)
     else:
@@ -24,6 +26,10 @@ def _describe_dict(value):
     else:
         key_type, value_type = map(_describe_values, zip(*value.items()))
     return types.Dict(key_type, value_type)
+
+
+def _describe_tuple(value):
+    return types.Tuple(tuple(map(describe_type_of, value)))
 
 
 def _describe_values(values):

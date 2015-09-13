@@ -50,6 +50,11 @@ class Dict(Type):
 dict_ = Dict
 
 @cobble.data
+class Tuple(Type):
+    elements = cobble.field()
+tuple_ = Tuple
+
+@cobble.data
 class CallableRef(Type):
     func_index = cobble.field()
 callable_ref = CallableRef

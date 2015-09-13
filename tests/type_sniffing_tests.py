@@ -33,6 +33,14 @@ def type_of_dict_is_sniffed_from_keys_and_values():
 
 
 @istest
+def type_of_tuple_is_sniffed_from_elements():
+    assert_equal(
+        types.tuple_((types.describe(int), types.describe(str))),
+        describe_type_of((1, "Kentucky Pill"))
+    )
+
+
+@istest
 def type_of_callable_stores_func_index():
     def f():
         pass

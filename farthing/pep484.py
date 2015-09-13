@@ -26,10 +26,17 @@ class Formatter(cobble.visitor(types.Type)):
     def visit_dict(self, type_):
         return "Dict[{0}, {1}]".format(format_type(type_.key), format_type(type_.value))
     
+    def visit_tuple(self, type_):
+        return "Tuple[{0}]".format(self._format_types(type_.elements))
+    
     def visit_callable(self, type_):
-        args = (format_type(arg_type) for arg_name, arg_type in type_.args)
+        args = self._format_types(arg_type for arg_name, arg_type in type_.args)
         returns = format_type(type_.returns)
-        return "Callable[[{0}], {1}]".format(", ".join(args), returns)
+        return "Callable[[{0}], {1}]".format(args, returns)
         
     def visit_callable_ref(self, type_):
         return "Callable"
+
+    def _format_types(self, types):
+        return ", ".join(map(self.visit, types))
+    
