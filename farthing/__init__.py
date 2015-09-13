@@ -27,25 +27,13 @@ def _run_and_annotate_subprocess(*, argv, annotate_paths, trace_paths):
     
 
 def trace(*, argv, trace_paths):
-    parent_connection, child_connection = multiprocessing.Pipe(False)
-    process = multiprocessing.Process(target=_trace_subprocess, args=(argv, trace_paths, child_connection))
-    process.start()
-    
-    entry_tuples = []
-    while True:
-        entry_tuple = parent_connection.recv()
-        if entry_tuple == "END":
-            process.join()
-            return TraceEntry.from_tuples(entry_tuples)
-        else:
-            entry_tuples.append(entry_tuple)
+    pool = multiprocessing.Pool(processes=1)
+    entry_tuples = pool.apply(_trace_subprocess, args=(argv, trace_paths))
+    return TraceEntry.from_tuples(entry_tuples)
 
-def _trace_subprocess(argv, trace_paths, pipe):
+def _trace_subprocess(argv, trace_paths):
     trace = _generate_trace(argv, trace_paths)
-    
-    for entry in trace:
-        pipe.send(entry.to_tuple())
-    pipe.send("END")
+    return [entry.to_tuple() for entry in trace]
 
 
 def _generate_trace(argv, trace_paths):
