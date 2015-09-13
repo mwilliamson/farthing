@@ -12,7 +12,7 @@ def guess_types(log):
 class _Guesser(object):
     def __init__(self, all_entries):
         self._all_entries = all_entries
-        self._in_progress = set()
+        self._callable_ref_cache = {}
         entries_grouped_by_function = (
             list(func_entries)
             for location, func_entries in grouped(all_entries, lambda entry: entry.location)
@@ -40,15 +40,14 @@ class _Guesser(object):
         return common_super_type(map(self._resolve_callable_ref, types))
     
     def _resolve_callable_ref(self, type_):
-        if type_ in self._in_progress:
-            return type_
+        if type_ in self._callable_ref_cache:
+            return self._callable_ref_cache[type_]
         elif types.is_callable_ref(type_):
-            self._in_progress.add(type_)
-            try:
-                return self._guess_function_type(
-                    self._entries_by_func_index[type_.func_index][0].func,
-                    self._entries_by_func_index[type_.func_index])
-            finally:
-                self._in_progress.remove(type_)
+            self._callable_ref_cache[type_] = type_
+            function_type = self._guess_function_type(
+                self._entries_by_func_index[type_.func_index][0].func,
+                self._entries_by_func_index[type_.func_index])
+            self._callable_ref_cache[type_] = function_type
+            return function_type
         else:
             return type_
