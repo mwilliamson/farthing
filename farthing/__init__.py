@@ -16,19 +16,19 @@ from .type_sniffing import describe_type_of
 __all__ = ["run"]
 
 
-def run_and_annotate(trace_path, argv):
+def run_and_annotate(*, argv, trace_paths):
     pool = multiprocessing.Pool(processes=1)
-    return pool.apply(_run_and_annotate_subprocess, args=(trace_path, argv))
+    return pool.apply(_run_and_annotate_subprocess, args=(argv, trace_paths))
 
 
-def _run_and_annotate_subprocess(trace_path, argv):
-    trace_log = _generate_trace(trace_path, argv)
+def _run_and_annotate_subprocess(argv, trace_paths):
+    trace_log = _generate_trace(argv, trace_paths)
     annotate(trace_log)
     
 
-def trace(trace_path, argv):
+def trace(*, argv, trace_paths):
     parent_connection, child_connection = multiprocessing.Pipe(False)
-    process = multiprocessing.Process(target=_trace_subprocess, args=(trace_path, argv, child_connection))
+    process = multiprocessing.Process(target=_trace_subprocess, args=(argv, trace_paths, child_connection))
     process.start()
     
     entry_tuples = []
@@ -40,18 +40,18 @@ def trace(trace_path, argv):
         else:
             entry_tuples.append(entry_tuple)
 
-def _trace_subprocess(trace_path, argv, pipe):
-    trace = _generate_trace(trace_path, argv)
+def _trace_subprocess(argv, trace_paths, pipe):
+    trace = _generate_trace(argv, trace_paths)
     
     for entry in trace:
         pipe.send(entry.to_tuple())
     pipe.send("END")
 
 
-def _generate_trace(trace_path, argv):
+def _generate_trace(argv, trace_paths):
     with runtime.override_argv(argv):
         transformer = FunctionTraceTransformer(_trace_func_name)
-        finder = importing.Finder(trace_path, transformer)
+        finder = importing.Finder(trace_paths, transformer)
         with runtime.prioritise_module_finder(finder):
             trace = []
             

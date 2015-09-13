@@ -7,8 +7,8 @@ from . import parser
 
 
 class Finder(MetaPathFinder):
-    def __init__(self, directory_path, transformer):
-        self._directory_path = os.path.abspath(directory_path)
+    def __init__(self, directory_paths, transformer):
+        self._directory_paths = list(map(os.path.abspath, directory_paths))
         self._transformer = transformer
         
     
@@ -20,7 +20,10 @@ class Finder(MetaPathFinder):
             return spec_from_loader(fullname, loader, origin=module_spec.origin, is_package=is_package)
     
     def _is_in_directory(self, path):
-        return os.path.commonprefix([self._directory_path, os.path.abspath(path)]) == self._directory_path
+        return any(
+            os.path.commonprefix([directory_path, os.path.abspath(path)]) == directory_path
+            for directory_path in self._directory_paths
+        )
     
 
 class Loader(FileLoader):

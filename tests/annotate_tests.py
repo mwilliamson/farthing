@@ -18,9 +18,7 @@ def repeat(x: str, y: int) -> str:
 
 print(repeat("hello ", 3))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 # TODO: split actual annotation from generation of types to remove duplication in tests
@@ -44,9 +42,7 @@ def repeat(x: str, y: Union[None, int]) -> str:
 print(repeat("hello ", 3))
 print(repeat("hello ", None))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -69,9 +65,7 @@ def half_int(value: int) -> float:
 
 print(map_ints(half_int, [1, 2, 3]))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -88,9 +82,7 @@ def strange(func: Callable[[Callable], int]) -> int:
 
 print(strange(strange))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -107,9 +99,7 @@ def repeat(x: object, y: int) -> str:
 
 print(repeat("hello ", 3))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -126,9 +116,7 @@ def repeat(x: str, y: int) -> object:
 
 print(repeat("hello ", 3))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -145,9 +133,7 @@ def repeat(x: str, y: int):
 
 print(repeat("hello ", 3))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -170,9 +156,7 @@ def g(x: int) -> int:
 
 print(f(2) + g(3))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -191,9 +175,7 @@ class Repeater(object):
 
 print(Repeater().repeat("hello ", 3))
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
 
 
 @istest
@@ -214,9 +196,13 @@ class Box(object):
 
 print(Box().value)
 """
-    with program_with_module(program) as program:
-        farthing.run_and_annotate(program.directory_path, [program.run_path])
-        assert_equal(typed_program, _read_file(program.module_path))
+    assert_equal(typed_program, _annotate_source(program))
+
+
+def _annotate_source(source):
+    with program_with_module(source) as program:
+        farthing.run_and_annotate(trace_paths=[program.directory_path], argv=[program.run_path])
+        return _read_file(program.module_path)
 
 
 def _read_file(path):
