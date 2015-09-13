@@ -16,13 +16,13 @@ from .type_sniffing import describe_type_of
 __all__ = ["run"]
 
 
-def run_and_annotate(*, argv, trace_paths):
+def run_and_annotate(**kwargs):
     pool = multiprocessing.Pool(processes=1)
-    return pool.apply(_run_and_annotate_subprocess, args=(argv, trace_paths))
+    return pool.apply(_run_and_annotate_subprocess, kwds=kwargs)
 
 
-def _run_and_annotate_subprocess(argv, trace_paths):
-    trace_log = _generate_trace(argv, trace_paths)
+def _run_and_annotate_subprocess(*, argv, annotate_paths, trace_paths):
+    trace_log = _generate_trace(argv, annotate_paths + trace_paths)
     annotate(trace_log)
     
 

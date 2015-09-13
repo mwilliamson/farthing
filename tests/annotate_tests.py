@@ -38,7 +38,10 @@ def repeat(x: str, y: int) -> str:
 print(repeat("hello ", 3))
 """
     with program_with_module(source) as program:
-        farthing.run_and_annotate(trace_paths=[program.module_path], argv=[program.run_path])
+        farthing.run_and_annotate(
+            annotate_paths=[program.module_path],
+            trace_paths=[],
+            argv=[program.run_path])
         assert_equal(typed_program, _read_file(program.module_path))
 
 
@@ -99,7 +102,7 @@ def twice(func, value):
     return func(func(value))
 """
     typed_twice = """
-def twice(func: Callable[[int], int], value: int):
+def twice(func: Callable[[int], int], value: int) -> int:
     return func(func(value))
 """
     increment = """
@@ -109,7 +112,7 @@ def increment(value):
     run = """
 import twice
 import increment
-print(twice(increment, 40))
+print(twice.twice(increment.increment, 40))
 """
     files = {
         "run.py": run,
@@ -118,9 +121,11 @@ print(twice(increment, 40))
     }
     with create_temp_dir(files) as directory:
         farthing.run_and_annotate(
-            trace_paths=[os.path.join(directory.path, "twice.py")],
+            trace_paths=[os.path.join(directory.path, "increment.py")],
+            annotate_paths=[os.path.join(directory.path, "twice.py")],
             argv=[os.path.join(directory.path, "run.py")])
         assert_equal(typed_twice, _read_file(os.path.join(directory.path, "twice.py")))
+        assert_equal(increment, _read_file(os.path.join(directory.path, "increment.py")))
 
 
 @istest
@@ -256,7 +261,10 @@ print(Box().value)
 
 def _annotate_source(source):
     with program_with_module(source) as program:
-        farthing.run_and_annotate(trace_paths=[program.directory_path], argv=[program.run_path])
+        farthing.run_and_annotate(
+            annotate_paths=[program.directory_path],
+            trace_paths=[],
+            argv=[program.run_path])
         return _read_file(program.module_path)
 
 
