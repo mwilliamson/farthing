@@ -105,3 +105,5 @@ TODO
 * Check typing of methods.
 
 * Support user-defined generics (with markup).
+
+* Allow additional directories and files to be traced without being annotated.
