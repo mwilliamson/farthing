@@ -31,6 +31,11 @@ def list_uses_list_class_from_pep_484():
 
 
 @istest
+def iterable_uses_iterable_class_from_pep_484():
+    assert_equal("Iterable[int]", format_type(types.iterable(types.describe(int))))
+
+
+@istest
 def dict_uses_dict_class_from_pep_484():
     assert_equal("Dict[int, str]", format_type(types.Dict(types.describe(int), types.describe(str))))
 

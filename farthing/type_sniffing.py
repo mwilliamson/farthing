@@ -2,10 +2,14 @@ from . import types
 from .supertype import common_super_type
 
 
+_iterables = (type({}.keys()), type({}.values()), type({}.items()))
+
 def describe_type_of(value):
     type_ = type(value)
     if issubclass(type_, list):
         return _describe_list(value)
+    elif issubclass(type_, _iterables):
+        return _describe_iterable(value)
     elif issubclass(type_, dict):
         return _describe_dict(value)
     elif issubclass(type_, tuple):
@@ -18,7 +22,11 @@ def describe_type_of(value):
 
 def _describe_list(value):
     return types.List(_describe_values(value))
-    
+
+
+def _describe_iterable(value):
+    return types.Iterable(_describe_values(value))
+
 
 def _describe_dict(value):
     if len(value) == 0:

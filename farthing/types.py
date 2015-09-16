@@ -44,6 +44,11 @@ class List(Type):
 list_ = List
 
 @cobble.data
+class Iterable(Type):
+    element = cobble.field()
+iterable = Iterable
+
+@cobble.data
 class Dict(Type):
     key = cobble.field()
     value = cobble.field()

@@ -23,6 +23,9 @@ class Formatter(cobble.visitor(types.Type)):
     def visit_list(self, type_):
         return "List[{0}]".format(format_type(type_.element))
     
+    def visit_iterable(self, type_):
+        return "Iterable[{0}]".format(format_type(type_.element))
+    
     def visit_dict(self, type_):
         return "Dict[{0}, {1}]".format(format_type(type_.key), format_type(type_.value))
     

@@ -41,6 +41,22 @@ def type_of_tuple_is_sniffed_from_elements():
 
 
 @istest
+def type_of_iterable_views_is_sniffed_from_elements():
+    assert_equal(
+        types.iterable(types.describe(int)),
+        describe_type_of({1: "Kentucky Pill"}.keys()),
+    )
+    assert_equal(
+        types.iterable(types.describe(str)),
+        describe_type_of({1: "Kentucky Pill"}.values()),
+    )
+    assert_equal(
+        types.iterable(types.tuple_((types.describe(int), types.describe(str)))),
+        describe_type_of({1: "Kentucky Pill"}.items()),
+    )
+
+
+@istest
 def type_of_callable_stores_func_index():
     def f():
         pass
